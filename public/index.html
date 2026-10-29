@@ -6,36 +6,47 @@
     <title>Gucci Kája v Lese u Taťky</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap');
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; overflow: hidden; background: #030508; font-family: 'Poppins', sans-serif; touch-action: none; color: white; user-select: none; }
+        body { margin: 0; overflow: hidden; background: #010204; font-family: 'Poppins', sans-serif; touch-action: none; color: white; user-select: none; }
         #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
         
-        /* Glassmorphism UI Header */
-        #ui { position: absolute; top: 12px; right: 12px; pointer-events: none; text-align: right; z-index: 5; }
-        h1 { margin: 0; font-size: 16px; font-weight: 800; background: linear-gradient(45deg, #ff3366, #ff99ac); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; text-shadow: 0 4px 12px rgba(255, 51, 102, 0.3); }
-        .stats-card { margin-top: 6px; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 12px; backdrop-filter: blur(8px); display: inline-flex; gap: 12px; font-size: 11px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-        .stat-item { display: flex; align-items: center; gap: 4px; }
+        /* Zaměřovací kříž uprostřed obrazovky */
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; transform: translate(-50%, -50%); pointer-events: none; z-index: 6; }
+        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(255,255,255,0.7); }
+        #crosshair::before { top: 4px; left: 0; width: 10px; height: 2px; }
+        #crosshair::after { top: 0; left: 4px; width: 2px; height: 10px; }
+
+        #ui { position: absolute; top: 10px; left: 10px; pointer-events: none; z-index: 5; }
+        h1 { margin: 0; font-size: 14px; font-weight: 800; color: #ff3366; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+        .stats-card { margin-top: 4px; background: rgba(10, 15, 25, 0.75); border: 1px solid rgba(255,255,255,0.15); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(6px); display: inline-flex; gap: 8px; font-size: 10px; }
+
+        /* Přepínač inventáře / nástrojů nahoře vpravo */
+        #tool-selector { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 10; pointer-events: auto; }
+        .tool-btn { padding: 8px 12px; background: rgba(20, 30, 45, 0.7); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; backdrop-filter: blur(6px); }
+        .tool-btn.active { border-color: #ff3366; background: rgba(255, 51, 102, 0.3); }
 
         /* Start Modal */
-        #name-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(3, 5, 8, 0.92); backdrop-filter: blur(12px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .modal-box { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.15); padding: 24px 32px; border-radius: 20px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6); max-width: 320px; width: 90%; }
-        .modal-box h2 { margin: 0 0 10px 0; font-size: 20px; color: #ff3366; text-transform: uppercase; letter-spacing: 1.5px; }
-        .modal-box p { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
-        .modal-box input { width: 100%; padding: 12px; font-size: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15, 23, 42, 0.8); color: white; text-align: center; outline: none; margin-bottom: 15px; font-family: inherit; }
-        .modal-box button { width: 100%; padding: 12px; font-size: 14px; font-weight: 800; background: linear-gradient(135deg, #ff3366, #e11d48); color: white; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(255, 51, 102, 0.4); }
+        #name-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 4, 8, 0.96); backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        .modal-box { background: rgba(20, 30, 45, 0.85); border: 1px solid rgba(255,255,255,0.2); padding: 24px; border-radius: 20px; text-align: center; width: 300px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+        .modal-box h2 { color: #ff3366; margin: 0 0 10px 0; font-size: 18px; }
+        .modal-box input { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0b111e; color: white; text-align: center; margin-bottom: 15px; outline: none; }
+        .modal-box button { width: 100%; padding: 12px; font-size: 14px; font-weight: 800; background: #ff3366; color: white; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
 
-        /* Mobile Controls - Ultra Pro Layout */
-        #joystick-container { width: 100px; height: 100px; position: absolute; bottom: 20px; left: 20px; pointer-events: auto; background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.25); border-radius: 50%; backdrop-filter: blur(6px); z-index: 10; box-shadow: inset 0 0 15px rgba(255,255,255,0.05); }
-        #joystick { width: 46px; height: 46px; background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(200,200,200,0.5)); border-radius: 50%; position: absolute; top: 27px; left: 27px; touch-action: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        /* Joystick vlevo */
+        #joystick-container { width: 90px; height: 90px; position: absolute; bottom: 20px; left: 20px; pointer-events: auto; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.25); border-radius: 50%; z-index: 10; }
+        #joystick { width: 40px; height: 40px; background: rgba(255,255,255,0.7); border-radius: 50%; position: absolute; top: 23px; left: 23px; touch-action: none; }
 
-        .btn-group { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 10; pointer-events: auto; }
-        .btn { width: 68px; height: 68px; background: rgba(15, 23, 42, 0.7); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; color: white; font-weight: 800; font-size: 10px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); flex-direction: column; box-shadow: 0 8px 20px rgba(0,0,0,0.4); font-family: inherit; }
-        .btn-shoot { border-color: rgba(255, 51, 102, 0.6); background: rgba(255, 51, 102, 0.2); }
-        .btn-shoot:active { background: rgba(255, 51, 102, 0.8); transform: scale(0.92); }
-        .btn-build { border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.2); }
-        .btn-build:active { background: rgba(245, 158, 11, 0.8); transform: scale(0.92); }
-        .btn-icon { font-size: 20px; margin-bottom: 2px; }
+        /* Akční tlačítka vpravo dole */
+        .action-buttons { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 12px; z-index: 10; pointer-events: auto; }
+        .btn { width: 60px; height: 60px; background: rgba(15, 23, 42, 0.75); border: 2px solid rgba(255,255,255,0.25); border-radius: 50%; color: white; font-weight: 800; font-size: 9px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); flex-direction: column; box-shadow: 0 6px 15px rgba(0,0,0,0.5); }
+        .btn:active { transform: scale(0.9); }
+        .btn-icon { font-size: 18px; margin-bottom: 2px; }
+        #btn-action { border-color: #38bdf8; background: rgba(56, 189, 248, 0.2); }
+        #btn-build { border-color: #f59e0b; background: rgba(245, 158, 11, 0.2); }
+        #btn-eat { border-color: #10b981; background: rgba(16, 185, 129, 0.2); }
+
+        /* Pravá plocha pro rozhlížení prstem */
+        #look-touch-zone { position: absolute; top: 0; right: 0; width: 50vw; height: 100vh; z-index: 5; pointer-events: auto; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -44,21 +55,29 @@
 
     <div id="name-modal">
         <div class="modal-box">
-            <h2>Gucci Kája</h2>
-            <p>V Lese u Taťky Multi-Survival</p>
+            <h2>GUCCI KÁJA V LESE</h2>
+            <p style="font-size:11px; color:#94a3b8; margin-bottom:15px;">Zadej jméno královny:</p>
             <input type="text" id="player-name-input" value="Královna Kája" maxlength="15">
-            <button id="start-game-btn">Hrát Hru</button>
+            <button id="start-game-btn">VSTOUPIT DO LESA</button>
         </div>
     </div>
 
+    <div id="crosshair"></div>
     <div id="canvas-container"></div>
+    <div id="look-touch-zone"></div>
+
+    <div id="tool-selector">
+        <button class="tool-btn active" id="tool-axe">🪓 Sekyra</button>
+        <button class="tool-btn" id="tool-gun">🔫 Samopal</button>
+    </div>
 
     <div id="ui">
         <h1>GUCCI KÁJA V LESE</h1>
         <div class="stats-card">
-            <div class="stat-item">🪵 <span id="wood-count">0</span></div>
-            <div class="stat-item">🛡️ <span id="barricade-count">0</span></div>
-            <div class="stat-item" style="color: #f87171;">🐺 <span id="wolf-status">Číhá v temnotě</span></div>
+            <div>🪵 Dřevo: <span id="wood-count">0</span></div>
+            <div>🥩 Maso: <span id="meat-count">0</span></div>
+            <div>❤️ HP: <span id="hp-count">100</span></div>
+            <div>🕒 Čas: <span id="time-status">Den ☀️</span></div>
         </div>
     </div>
 
@@ -66,14 +85,16 @@
         <div id="joystick"></div>
     </div>
 
-    <div class="btn-group">
-        <div class="btn btn-shoot" id="btn-shoot"><span class="btn-icon">💥</span>PALBA</div>
-        <div class="btn btn-build" id="btn-build"><span class="btn-icon">🪵</span>STAVĚT</div>
+    <div class="action-buttons">
+        <div class="btn" id="btn-action"><span class="btn-icon" id="action-icon">🪓</span><span id="action-text">SEKAT</span></div>
+        <div class="btn" id="btn-build"><span class="btn-icon">🪵</span>STAVĚT</div>
+        <div class="btn" id="btn-eat"><span class="btn-icon">🍖</span>JÍST</div>
     </div>
 
     <script>
         const socket = io();
         let playerName = "Kája";
+        let activeTool = 'axe'; // 'axe' nebo 'gun'
 
         document.getElementById('start-game-btn').addEventListener('click', () => {
             const val = document.getElementById('player-name-input').value.trim();
@@ -82,162 +103,168 @@
             socket.emit('joinGame', playerName);
         });
 
-        // --- RENDERER A ATMO-SCÉNA ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x030611);
-        scene.fog = new THREE.FogExp2(0x030611, 0.022);
+        // Přepínání nástrojů
+        document.getElementById('tool-axe').addEventListener('click', () => {
+            activeTool = 'axe';
+            document.getElementById('tool-axe').classList.add('active');
+            document.getElementById('tool-gun').classList.remove('active');
+            document.getElementById('action-icon').innerText = '🪓';
+            document.getElementById('action-text').innerText = 'SEKAT';
+            updatePlayerWeapon();
+        });
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        document.getElementById('tool-gun').addEventListener('click', () => {
+            activeTool = 'gun';
+            document.getElementById('tool-gun').classList.add('active');
+            document.getElementById('tool-axe').classList.remove('active');
+            document.getElementById('action-icon').innerText = '💥';
+            document.getElementById('action-text').innerText = 'STŘÍLET';
+            updatePlayerWeapon();
+        });
+
+        // --- SCÉNA A OSVĚTLENÍ ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a1128);
+        scene.fog = new THREE.FogExp2(0x0a1128, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
         document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        // --- OSVĚTLENÍ ---
-        const ambientLight = new THREE.AmbientLight(0x233254, 0.8);
+        const ambientLight = new THREE.AmbientLight(0x38bdf8, 0.8);
         scene.add(ambientLight);
 
-        const moonLight = new THREE.DirectionalLight(0x88bbff, 1.8);
-        moonLight.position.set(40, 60, -30);
-        moonLight.castShadow = true;
-        moonLight.shadow.mapSize.width = 1024;
-        moonLight.shadow.mapSize.height = 1024;
-        moonLight.shadow.bias = -0.0005;
-        scene.add(moonLight);
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.4);
+        sunLight.position.set(40, 60, 40);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
 
-        // --- PROSTŘEDÍ (LES, BALVANY, ČÁSTICE) ---
-        const groundGeo = new THREE.PlaneGeometry(250, 250, 32, 32);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x122215, roughness: 0.9, metalness: 0.1 });
+        // Země
+        const groundGeo = new THREE.PlaneGeometry(200, 200);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x112211, roughness: 0.9 });
         const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // Generování stromů a balvanů
+        // Stromy
         const trees = [];
-        const treeGeoStem = new THREE.CylinderGeometry(0.3, 0.5, 4, 8);
-        const treeMatStem = new THREE.MeshStandardMaterial({ color: 0x2b1810, roughness: 1.0 });
-        const treeGeoFoliage = new THREE.ConeGeometry(2.2, 5, 8);
-        const treeMatFoliage = new THREE.MeshStandardMaterial({ color: 0x0a331c, roughness: 0.8 });
+        for(let i=0; i<60; i++) {
+            const x = (Math.random() - 0.5) * 160;
+            const z = (Math.random() - 0.5) * 160;
+            if(Math.hypot(x, z) > 6) {
+                const group = new THREE.Group();
+                const trunk = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.6, 4.5),
+                    new THREE.MeshStandardMaterial({ color: 0x3d2314 })
+                );
+                trunk.position.y = 2.25;
+                trunk.castShadow = true;
+                group.add(trunk);
 
-        for(let i=0; i<90; i++) {
-            const x = (Math.random() - 0.5) * 200;
-            const z = (Math.random() - 0.5) * 200;
-            if(Math.hypot(x, z) > 7) { 
-                const treeGroup = new THREE.Group();
-                const stem = new THREE.Mesh(treeGeoStem, treeMatStem);
-                stem.position.y = 2;
-                stem.castShadow = true;
-                treeGroup.add(stem);
+                const leaves = new THREE.Mesh(
+                    new THREE.ConeGeometry(2.5, 5.5, 6),
+                    new THREE.MeshStandardMaterial({ color: 0x0f3d1f })
+                );
+                leaves.position.y = 5.5;
+                leaves.castShadow = true;
+                group.add(leaves);
 
-                const f1 = new THREE.Mesh(treeGeoFoliage, treeMatFoliage);
-                f1.position.y = 4.5;
-                f1.castShadow = true;
-                treeGroup.add(f1);
-
-                const f2 = new THREE.Mesh(treeGeoFoliage, treeMatFoliage);
-                f2.position.y = 6.2;
-                f2.scale.set(0.75, 0.75, 0.75);
-                f2.castShadow = true;
-                treeGroup.add(f2);
-
-                treeGroup.position.set(x, 0, z);
-                scene.add(treeGroup);
-                trees.push({ x, z });
+                group.position.set(x, 0, z);
+                scene.add(group);
+                trees.push({ x, z, hp: 3, mesh: group });
             }
         }
 
-        // Světlušky / Magické částice v lese
-        const particlesGeo = new THREE.BufferGeometry();
-        const particleCount = 120;
-        const posArray = new Float32Array(particleCount * 3);
-        for(let i=0; i<particleCount*3; i+=3) {
-            posArray[i] = (Math.random() - 0.5) * 150;
-            posArray[i+1] = Math.random() * 4 + 0.5;
-            posArray[i+2] = (Math.random() - 0.5) * 150;
+        // --- ZVÍŘATA (ZAJÍCI A VLCI) ---
+        const animals = [];
+        function spawnAnimal(type) {
+            const group = new THREE.Group();
+            const color = type === 'wolf' ? 0x4a4a4a : 0xd3b88d;
+            const size = type === 'wolf' ? 0.8 : 0.4;
+            
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(size, size, size * 1.5),
+                new THREE.MeshStandardMaterial({ color: color })
+            );
+            body.position.y = size / 2;
+            group.add(body);
+
+            const x = (Math.random() - 0.5) * 140;
+            const z = (Math.random() - 0.5) * 140;
+            group.position.set(x, 0, z);
+            scene.add(group);
+
+            animals.push({ type: type, mesh: group, hp: type === 'wolf' ? 2 : 1, speed: type === 'wolf' ? 0.06 : 0.04 });
         }
-        particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const particlesMat = new THREE.PointsMaterial({ size: 0.2, color: 0xffd700, transparent: true, opacity: 0.7 });
-        const fireflies = new THREE.Points(particlesGeo, particlesMat);
-        scene.add(fireflies);
 
-        // --- MODEL KRÁLOVNY KÁJI (HIGH DETAIL) ---
-        function createQueenMesh() {
-            const queen = new THREE.Group();
+        // Vytvoříme 3 vlky a 6 zajíců
+        for(let i=0; i<3; i++) spawnAnimal('wolf');
+        for(let i=0; i<6; i++) spawnAnimal('rabbit');
 
-            // Šaty
-            const dressGeo = new THREE.ConeGeometry(0.55, 1.3, 16);
-            const dressMat = new THREE.MeshStandardMaterial({ color: 0xff2a5f, roughness: 0.3, metalness: 0.2 });
-            const dress = new THREE.Mesh(dressGeo, dressMat);
-            dress.position.y = 0.65;
-            dress.castShadow = true;
-            queen.add(dress);
+        // --- MODEL KRÁLOVNY S DATOVÝMI SKUPINAMI PRO VÝBAVU ---
+        const queenGroup = new THREE.Group();
+        
+        // Šaty
+        const dress = new THREE.Mesh(
+            new THREE.ConeGeometry(0.45, 1.2, 12),
+            new THREE.MeshStandardMaterial({ color: 0xff2a5f, roughness: 0.4 })
+        );
+        dress.position.y = 0.6;
+        dress.castShadow = true;
+        queenGroup.add(dress);
 
-            // Hlava
-            const headGeo = new THREE.SphereGeometry(0.28, 16, 16);
-            const headMat = new THREE.MeshStandardMaterial({ color: 0xffdec7, roughness: 0.6 });
-            const head = new THREE.Mesh(headGeo, headMat);
-            head.position.y = 1.45;
-            head.castShadow = true;
-            queen.add(head);
+        // Hlava
+        const head = new THREE.Mesh(
+            new THREE.SphereGeometry(0.25, 16, 16),
+            new THREE.MeshStandardMaterial({ color: 0xffdbac })
+        );
+        head.position.y = 1.35;
+        queenGroup.add(head);
 
-            // Vlasy
-            const hairGeo = new THREE.SphereGeometry(0.31, 16, 16);
-            const hairMat = new THREE.MeshStandardMaterial({ color: 0xffe875, roughness: 0.4 });
-            const hair = new THREE.Mesh(hairGeo, hairMat);
-            hair.position.set(0, 1.48, -0.04);
-            queen.add(hair);
+        // Koruna
+        const crown = new THREE.Mesh(
+            new THREE.ConeGeometry(0.2, 0.3, 4),
+            new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8 })
+        );
+        crown.position.y = 1.65;
+        queenGroup.add(crown);
 
-            // Zlatá Koruna se špičkami
-            const crownGroup = new THREE.Group();
-            const baseCrownGeo = new THREE.CylinderGeometry(0.22, 0.2, 0.12, 16);
-            const goldMat = new THREE.MeshStandardMaterial({ color: 0xffb700, metalness: 0.9, roughness: 0.15 });
-            const baseCrown = new THREE.Mesh(baseCrownGeo, goldMat);
-            crownGroup.add(baseCrown);
+        // Nástroj v ruce (sekyra / samopal)
+        const weaponHolder = new THREE.Group();
+        queenGroup.add(weaponHolder);
+        weaponHolder.position.set(0.35, 0.7, -0.2);
 
-            for(let i=0; i<5; i++) {
-                const spikeGeo = new THREE.ConeGeometry(0.04, 0.15, 4);
-                const spike = new THREE.Mesh(spikeGeo, goldMat);
-                const angle = (i / 5) * Math.PI * 2;
-                spike.position.set(Math.cos(angle) * 0.18, 0.1, Math.sin(angle) * 0.18);
-                crownGroup.add(spike);
+        function updatePlayerWeapon() {
+            while(weaponHolder.children.length > 0) { weaponHolder.remove(weaponHolder.children[0]); }
+            if(activeTool === 'axe') {
+                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.7), new THREE.MeshStandardMaterial({ color: 0x5c4033 }));
+                handle.rotation.z = Math.PI / 2;
+                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.18), new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9 }));
+                blade.position.set(0, 0.12, 0);
+                weaponHolder.add(handle, blade);
+            } else {
+                const gunBody = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 0.6), new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.8 }));
+                const scope = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.15), new THREE.MeshStandardMaterial({ color: 0xff3366 }));
+                scope.rotation.x = Math.PI / 2;
+                scope.position.set(0, 0.08, 0);
+                weaponHolder.add(gunBody, scope);
             }
-            crownGroup.position.y = 1.8;
-            queen.add(crownGroup);
-
-            // Samopal s optikou
-            const gunGroup = new THREE.Group();
-            const bodyG = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.6), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.8 }));
-            const magG = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.22, 0.1), new THREE.MeshStandardMaterial({ color: 0x333333 }));
-            magG.position.set(0, -0.12, -0.05);
-            const scopeG = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2), new THREE.MeshStandardMaterial({ color: 0xff3366, metalness: 0.9 }));
-            scopeG.rotation.x = Math.PI / 2;
-            scopeG.position.set(0, 0.08, -0.05);
-
-            gunGroup.add(bodyG, magG, scopeG);
-            gunGroup.position.set(0.35, 1.0, 0.2);
-            queen.add(gunGroup);
-
-            // Světlo okolo hráčky
-            const auraLight = new THREE.PointLight(0xff6699, 1.2, 8);
-            auraLight.position.y = 1.5;
-            queen.add(auraLight);
-
-            return queen;
         }
-
-        const myPlayer = createQueenMesh();
-        scene.add(myPlayer);
+        updatePlayerWeapon();
+        scene.add(queenGroup);
 
         let wood = 0;
+        let meat = 0;
+        let hp = 100;
         let barricadesCount = 0;
-        let playerPosX = 0, playerPosZ = 0, playerRotation = 0;
+        let playerPosX = 0, playerPosZ = 0;
+        let cameraAngleY = 0;
+        let gameTime = 0; // Pro střídání dne a noci
 
-        // --- ULTRAPOZNANÝ JOYSTICK ---
+        // --- JOYSTICK ---
         const joystick = document.getElementById('joystick');
         const joystickContainer = document.getElementById('joystick-container');
         let joyMove = { x: 0, y: 0 };
@@ -258,65 +285,87 @@
             const dist = Math.sqrt(dx*dx + dy*dy);
             const clampedDist = Math.min(dist, joyRadius);
             const angle = Math.atan2(dy, dx);
-            
             joystick.style.transform = `translate(${Math.cos(angle) * clampedDist}px, ${Math.sin(angle) * clampedDist}px)`;
-            
             joyMove = { 
-                x: -(Math.cos(angle) * clampedDist) / joyRadius, 
-                y: -(Math.sin(angle) * clampedDist) / joyRadius 
+                x: (Math.cos(angle) * clampedDist) / joyRadius, 
+                y: (Math.sin(angle) * clampedDist) / joyRadius 
             };
         });
 
-        // Střelba s efektem výstřelu
-        document.getElementById('btn-shoot').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            
-            // Muzzle flash efekt
-            const flash = new THREE.PointLight(0xffaa00, 4, 10);
-            flash.position.set(playerPosX + Math.sin(playerRotation), 1.2, playerPosZ + Math.cos(playerRotation));
-            scene.add(flash);
-            setTimeout(() => scene.remove(flash), 60);
+        // --- OTÁČENÍ KAMERY PRSTEM (CoD style) ---
+        let isLooking = false;
+        let lastTouchX = 0;
+        const lookZone = document.getElementById('look-touch-zone');
+        lookZone.addEventListener('touchstart', (e) => { isLooking = true; lastTouchX = e.touches[0].clientX; });
+        lookZone.addEventListener('touchmove', (e) => {
+            if (!isLooking) return;
+            const currentX = e.touches[0].clientX;
+            cameraAngleY -= (currentX - lastTouchX) * 0.005;
+            lastTouchX = currentX;
+        });
+        lookZone.addEventListener('touchend', () => { isLooking = false; });
 
-            trees.forEach((tree) => {
-                if(Math.hypot(playerPosX - tree.x, playerPosZ - tree.z) < 5.5) {
-                    wood += 3;
-                    document.getElementById('wood-count').innerText = wood;
-                }
-            });
-            socket.emit('playerShoot', { x: playerPosX, z: playerPosZ });
+        // --- HLAVNÍ AKČNÍ TLAČÍTKO (Sekání stromů nebo střelba) ---
+        document.getElementById('btn-action').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if(activeTool === 'axe') {
+                trees.forEach((tree) => {
+                    if(Math.hypot(playerPosX - tree.x, playerPosZ - tree.z) < 4.5) {
+                        wood += 5;
+                        document.getElementById('wood-count').innerText = wood;
+                    }
+                });
+            } else {
+                // Střelba na zvířata
+                animals.forEach((animal, index) => {
+                    if(Math.hypot(playerPosX - animal.mesh.position.x, playerPosZ - animal.mesh.position.z) < 8) {
+                        animal.hp--;
+                        if(animal.hp <= 0) {
+                            scene.remove(animal.mesh);
+                            animals.splice(index, 1);
+                            meat += 2;
+                            document.getElementById('meat-count').innerText = meat;
+                            // Respawn zvířete po chvíli
+                            setTimeout(() => spawnAnimal(Math.random() > 0.5 ? 'wolf' : 'rabbit'), 8000);
+                        }
+                    }
+                });
+            }
         });
 
         // Stavění barikády
         document.getElementById('btn-build').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            if(wood >= 12) {
-                wood -= 12;
+            if(wood >= 10) {
+                wood -= 10;
                 document.getElementById('wood-count').innerText = wood;
-                const bx = playerPosX + Math.sin(playerRotation) * 2.2;
-                const bz = playerPosZ + Math.cos(playerRotation) * 2.2;
-                spawnBarricade(bx, bz);
-                socket.emit('placeBarricade', { x: bx, z: bz });
+                const bx = playerPosX + Math.sin(cameraAngleY) * 2;
+                const bz = playerPosZ + Math.cos(cameraAngleY) * 2;
+                const bar = new THREE.Mesh(
+                    new THREE.BoxGeometry(2.2, 1.5, 0.4),
+                    new THREE.MeshStandardMaterial({ color: 0x8b5a2b })
+                );
+                bar.position.set(bx, 0.75, bz);
+                scene.add(bar);
+                barricadesCount++;
             }
         });
 
-        function spawnBarricade(x, z) {
-            const barGeo = new THREE.BoxGeometry(2.4, 1.4, 0.4);
-            const barMat = new THREE.MeshStandardMaterial({ color: 0x6e4723, roughness: 0.8 });
-            const barricade = new THREE.Mesh(barGeo, barMat);
-            barricade.position.set(x, 0.7, z);
-            barricade.castShadow = true;
-            barricade.receiveShadow = true;
-            scene.add(barricade);
-            barricadesCount++;
-            document.getElementById('barricade-count').innerText = barricadesCount;
-        }
+        // Jíst maso (doplnění HP)
+        document.getElementById('btn-eat').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if(meat > 0 && hp < 100) {
+                meat--;
+                hp = Math.min(100, hp + 30);
+                document.getElementById('meat-count').innerText = meat;
+                document.getElementById('hp-count').innerText = hp;
+            }
+        });
 
-        // Multiplayer s ostatními
+        // Multiplayer synchronizace
         const otherPlayers = {};
         socket.on('currentPlayers', (players) => {
-            Object.keys(players).forEach((id) => {
-                if (id !== socket.id) addOtherPlayer(players[id]);
-            });
+            Object.keys(players).forEach((id) => { if (id !== socket.id) addOtherPlayer(players[id]); });
         });
         socket.on('newPlayer', (info) => addOtherPlayer(info));
         socket.on('playerMoved', (info) => {
@@ -325,45 +374,72 @@
                 otherPlayers[info.id].rotation.y = info.rotation;
             }
         });
-        socket.on('barricadePlaced', (data) => spawnBarricade(data.x, data.z));
 
         function addOtherPlayer(info) {
-            const pMesh = createQueenMesh();
+            const pMesh = queenGroup.clone();
             pMesh.position.set(info.x, info.y, info.z);
             scene.add(pMesh);
             otherPlayers[info.id] = pMesh;
         }
 
-        // --- MAIN GAME LOOP ---
-        const speed = 0.16;
+        // --- HLAVNÍ HERNÍ SMYČKA ---
+        const speed = 0.15;
         function animate() {
             requestAnimationFrame(animate);
 
-            if (joyMove.x !== 0 || joyMove.y !== 0) {
-                playerRotation = Math.atan2(joyMove.x, joyMove.y);
-                myPlayer.rotation.y = playerRotation;
-
-                playerPosX += Math.sin(playerRotation) * speed;
-                playerPosZ += Math.cos(playerRotation) * speed;
-                
-                myPlayer.position.set(playerPosX, 0, playerPosZ);
+            // Střídání dne a noci
+            gameTime += 0.002;
+            const cycle = Math.sin(gameTime);
+            if(cycle > 0) {
+                scene.background.setHex(0x0a1128);
+                scene.fog.color.setHex(0x0a1128);
+                sunLight.intensity = 1.4;
+                document.getElementById('time-status').innerText = "Den ☀️";
+            } else {
+                scene.background.setHex(0x020308);
+                scene.fog.color.setHex(0x020308);
+                sunLight.intensity = 0.3;
+                document.getElementById('time-status').innerText = "Noc 🌙";
             }
 
-            // Plynulé sledování kamerou z 3. osoby
-            const targetCamX = playerPosX - Math.sin(playerRotation) * 5.5;
-            const targetCamZ = playerPosZ - Math.cos(playerRotation) * 5.5;
-            camera.position.x += (targetCamX - camera.position.x) * 0.1;
-            camera.position.y += (3.2 - camera.position.y) * 0.1;
-            camera.position.z += (targetCamZ - camera.position.z) * 0.1;
+            // Pohyb hráče
+            if (joyMove.x !== 0 || joyMove.y !== 0) {
+                const moveX = (-joyMove.x * Math.cos(cameraAngleY) - joyMove.y * Math.sin(cameraAngleY));
+                const moveZ = (-joyMove.x * Math.sin(cameraAngleY) + joyMove.y * Math.cos(cameraAngleY));
+                
+                playerPosX += moveX * speed;
+                playerPosZ += moveZ * speed;
+                playerPosX = Math.max(-90, Math.min(90, playerPosX));
+                playerPosZ = Math.max(-90, Math.min(90, playerPosZ));
+
+                queenGroup.position.set(playerPosX, 0, playerPosZ);
+                queenGroup.rotation.y = cameraAngleY + Math.atan2(joyMove.x, joyMove.y);
+            }
+
+            // Pohyb zvířat / vlků za hráčem
+            animals.forEach(animal => {
+                const dx = playerPosX - animal.mesh.position.x;
+                const dz = playerPosZ - animal.mesh.position.z;
+                const dist = Math.hypot(dx, dz);
+                if(animal.type === 'wolf' && dist < 35) {
+                    animal.mesh.position.x += (dx / dist) * animal.speed;
+                    animal.mesh.position.z += (dz / dist) * animal.speed;
+                    animal.mesh.rotation.y = Math.atan2(dx, dz);
+                    if(dist < 2.0) {
+                        hp = Math.max(0, hp - 0.2);
+                        document.getElementById('hp-count').innerText = Math.floor(hp);
+                    }
+                }
+            });
+
+            // Kamera sledování
+            const camDist = 5.5;
+            camera.position.x = playerPosX + Math.sin(cameraAngleY) * camDist;
+            camera.position.y = 3.2;
+            camera.position.z = playerPosZ + Math.cos(cameraAngleY) * camDist;
             camera.lookAt(playerPosX, 1.2, playerPosZ);
 
-            // Animace světlušek
-            const time = Date.now() * 0.001;
-            fireflies.rotation.y = time * 0.05;
-
-            socket.emit('playerMovement', {
-                x: playerPosX, y: 0, z: playerPosZ, rotation: playerRotation
-            });
+            socket.emit('playerMovement', { x: playerPosX, y: 0, z: playerPosZ, rotation: queenGroup.rotation.y });
 
             renderer.render(scene, camera);
         }
