@@ -1,188 +1,141 @@
-
-const express = require("express");
-const http = require("http");
-const path = require("path");
-const { Server } = require("socket.io");
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" }
+  cors: { origin: '*' }
 });
 
-const PORT = process.env.PORT || 3000;
-const WORLD_LIMIT = 48;
-const MAX_BLOCKS = 12000;
+const PORT = process.env.PORT || 10000;
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static('public'));
 
-app.get("/health", (_req, res) => {
-  res.json({ ok: true, game: "Gucci Kaja" });
+app.get('/health', (_req, res) => {
+  res.json({
+    ok: true,
+    game: 'Gucci Kaja',
+    version: '2.0.0'
+  });
 });
 
 const players = new Map();
-const blocks = new Map();
 
-function blockKey(x, y, z) {
-  return `${x},${y},${z}`;
+const colors = [
+  '#ff72bd',
+  '#65c8ff',
+  '#b99aff',
+  '#ffbd66',
+  '#6fe0a1',
+  '#ff8e7b',
+  '#ffe36e'
+];
+
+function cleanNick(value) {
+  const nick = String(value || 'Dobrodruh')
+    .replace(/[<>\u0000-\u001f]/g, '')
+    .trim()
+    .slice(0, 16);
+
+  return nick || 'Dobrodruh';
 }
 
-function validPosition(x, y, z) {
-  return Number.isInteger(x) &&
-    Number.isInteger(y) &&
-    Number.isInteger(z) &&
-    Math.abs(x) <= WORLD_LIMIT &&
-    Math.abs(z) <= WORLD_LIMIT &&
-    y >= 0 &&
-    y <= 80;
+function safeNumber(value, fallback = 0) {
+  return Number.isFinite(value)
+    ? Math.max(-48, Math.min(48, value))
+    : fallback;
 }
 
-// Základní terén
-for (let x = -12; x <= 12; x++) {
-  for (let z = -12; z <= 12; z++) {
-    blocks.set(blockKey(x, 0, z), {
-      x, y: 0, z, type: "grass"
-    });
-
-    blocks.set(blockKey(x, -1, z), {
-      x, y: -1, z, type: "dirt"
-    });
-  }
-}
-
-// Malé dekorativní ostrůvky
-for (let i = 0; i < 35; i++) {
-  const x = Math.floor(Math.random() * 65) - 32;
-  const z = Math.floor(Math.random() * 65) - 32;
-
-  if (Math.abs(x) < 14 && Math.abs(z) < 14) continue;
-
-  blocks.set(blockKey(x, 0, z), {
-    x, y: 0, z, type: "grass"
-  });
-}
-
-function publicPlayer(player) {
-  return {
-    id: player.id,
-    name: player.name,
-    x: player.x,
-    y: player.y,
-    z: player.z,
-    rotation: player.rotation,
-    color: player.color
-  };
-}
-
-io.on("connection", (socket) => {
-  socket.emit("world:init", {
-    blocks: Array.from(blocks.values()),
-    players: Array.from(players.values()).map(publicPlayer)
+io.on('connection', socket => {
+  socket.emit('worldState', {
+    players: [...players.entries()].map(([id, p]) => ({
+      id,
+      ...p
+    }))
   });
 
-  socket.on("player:join", (data = {}) => {
-    const name = String(data.name || "Hráč")
-      .replace(/[<>]/g, "")
-      .trim()
-      .slice(0, 18) || "Hráč";
-
+  socket.on('joinGame', (data = {}) => {
     const player = {
-      id: socket.id,
-      name,
-      x: Math.random() * 4 - 2,
-      y: 2,
-      z: Math.random() * 4 - 2,
-      rotation: 0,
-      color: Math.floor(Math.random() * 0xffffff)
+      nick: cleanNick(data.nick),
+      color: colors[Math.floor(Math.random() * colors.length)],
+      x: safeNumber(data.x, Math.random() * 4 - 2),
+      y: 0,
+      z: safeNumber(data.z, Math.random() * 4 - 2),
+      yaw: 0,
+      emote: 'idle'
     };
 
     players.set(socket.id, player);
-    socket.emit("player:joined", publicPlayer(player));
-    socket.broadcast.emit("player:created", publicPlayer(player));
-    io.emit("players:count", players.size);
+
+    socket.emit('joined', {
+      id: socket.id,
+      player
+    });
+
+    socket.broadcast.emit('playerJoined', {
+      id: socket.id,
+      player
+    });
+
+    io.emit('playerCount', players.size);
   });
 
-  socket.on("player:move", (data = {}) => {
-    const player = players.get(socket.id);
-    if (!player) return;
+  socket.on('move', data => {
+    const p = players.get(socket.id);
 
-    const x = Number(data.x);
-    const y = Number(data.y);
-    const z = Number(data.z);
-    const rotation = Number(data.rotation);
+    if (
+      !p ||
+      !data ||
+      !Number.isFinite(data.x) ||
+      !Number.isFinite(data.z)
+    ) {
+      return;
+    }
 
-    if (![x, y, z, rotation].every(Number.isFinite)) return;
-    if (Math.abs(x) > WORLD_LIMIT + 5 ||
-        Math.abs(z) > WORLD_LIMIT + 5 ||
-        y < -2 || y > 100) return;
+    p.x = safeNumber(data.x);
+    p.z = safeNumber(data.z);
+    p.yaw = Number.isFinite(data.yaw) ? data.yaw : 0;
+    p.emote = typeof data.emote === 'string'
+      ? data.emote.slice(0, 12)
+      : 'idle';
 
-    player.x = x;
-    player.y = y;
-    player.z = z;
-    player.rotation = rotation;
-
-    socket.broadcast.volatile.emit(
-      "player:moved",
-      publicPlayer(player)
-    );
-  });
-
-  socket.on("block:place", (data = {}) => {
-    const x = Number(data.x);
-    const y = Number(data.y);
-    const z = Number(data.z);
-    const allowed = ["grass", "dirt", "stone", "gold", "pink"];
-
-    if (!validPosition(x, y, z)) return;
-    if (!allowed.includes(data.type)) return;
-
-    const key = blockKey(x, y, z);
-    if (blocks.has(key) || blocks.size >= MAX_BLOCKS) return;
-
-    const block = { x, y, z, type: data.type };
-    blocks.set(key, block);
-    io.emit("block:placed", block);
-  });
-
-  socket.on("block:break", (data = {}) => {
-    const x = Number(data.x);
-    const y = Number(data.y);
-    const z = Number(data.z);
-
-    if (!validPosition(x, y, z) || y <= 0) return;
-
-    const key = blockKey(x, y, z);
-    if (!blocks.has(key)) return;
-
-    blocks.delete(key);
-    io.emit("block:broken", { x, y, z });
-  });
-
-  socket.on("chat:send", (data = {}) => {
-    const player = players.get(socket.id);
-    if (!player) return;
-
-    const message = String(data.message || "")
-      .replace(/[<>]/g, "")
-      .trim()
-      .slice(0, 180);
-
-    if (!message) return;
-
-    io.emit("chat:message", {
-      name: player.name,
-      message,
-      time: Date.now()
+    socket.broadcast.volatile.emit('playerMoved', {
+      id: socket.id,
+      x: p.x,
+      z: p.z,
+      yaw: p.yaw,
+      emote: p.emote
     });
   });
 
-  socket.on("disconnect", () => {
+  socket.on('chatMessage', message => {
+    const p = players.get(socket.id);
+
+    if (!p) return;
+
+    const text = String(message || '')
+      .replace(/[<>\u0000-\u001f]/g, '')
+      .trim()
+      .slice(0, 120);
+
+    if (text) {
+      io.emit('chatMessage', {
+        nick: p.nick,
+        text,
+        id: socket.id,
+        at: Date.now()
+      });
+    }
+  });
+
+  socket.on('disconnect', () => {
     players.delete(socket.id);
-    io.emit("player:left", socket.id);
-    io.emit("players:count", players.size);
+    io.emit('playerLeft', socket.id);
+    io.emit('playerCount', players.size);
   });
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Gucci Kaja běží na portu ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Gucci Kaja 2.0 běží na portu ${PORT}`);
 });
