@@ -8,23 +8,25 @@
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; color: white; }
         #canvas-container { width: 100vw; height: 100vh; }
         
-        #ui { position: absolute; top: 10px; right: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; text-align: right; }
-        h1 { margin: 0; font-size: 18px; color: #ff3366; letter-spacing: 1px; }
-        .stats { font-size: 12px; margin-top: 5px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(4px); display: inline-block; }
+        #ui { position: absolute; top: 10px; right: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; text-align: right; z-index: 5; }
+        h1 { margin: 0; font-size: 16px; color: #ff3366; letter-spacing: 1px; }
+        .stats { font-size: 11px; margin-top: 4px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 6px; backdrop-filter: blur(4px); display: inline-block; }
 
         /* Jmenovka modalu při startu */
-        #name-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
-        #name-modal input { padding: 12px; font-size: 18px; border-radius: 8px; border: none; margin-bottom: 15px; text-align: center; width: 250px; }
+        #name-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        #name-modal input { padding: 12px; font-size: 18px; border-radius: 8px; border: none; margin-bottom: 15px; text-align: center; width: 250px; color: #000; }
         #name-modal button { padding: 12px 25px; font-size: 16px; background: #ff3366; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* Mobilní ovládání */
-        #touch-controls { position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; box-sizing: border-box; pointer-events: none; }
-        .btn { width: 60px; height: 60px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-weight: bold; font-size: 10px; display: flex; align-items: center; justify-content: center; pointer-events: auto; backdrop-filter: blur(5px); flex-direction: column; }
+        /* Mobilní ovládání - opravené rozvržení, žádné překrývání */
+        #joystick-container { width: 90px; height: 90px; position: absolute; bottom: 15px; left: 15px; pointer-events: auto; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; z-index: 10; }
+        #joystick { width: 45px; height: 45px; background: rgba(255,255,255,0.7); border-radius: 50%; position: absolute; top: 22.5px; left: 22.5px; touch-action: none; }
+
+        .btn { width: 65px; height: 65px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-weight: bold; font-size: 9px; display: flex; align-items: center; justify-content: center; pointer-events: auto; backdrop-filter: blur(5px); flex-direction: column; z-index: 10; position: absolute; bottom: 25px; }
         .btn:active { background: rgba(255, 51, 102, 0.7); transform: scale(0.95); }
-        .btn-icon { font-size: 20px; }
-        
-        #joystick-container { width: 70px; height: 70px; position: absolute; bottom: 10px; left: 10px; pointer-events: auto; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; }
-        #joystick { width: 35px; height: 35px; background: rgba(255,255,255,0.6); border-radius: 50%; position: absolute; top: 17.5px; left: 17.5px; touch-action: none; }
+        .btn-icon { font-size: 18px; }
+
+        #btn-shoot { left: 120px; } /* Hned vedle joysticku vlevo */
+        #btn-build { right: 20px; }  /* Vpravo dole */
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -49,10 +51,8 @@
         </div>
     </div>
 
-    <div id="touch-controls">
-        <div class="btn" id="btn-shoot"><span class="btn-icon">🔫</span>STŘÍLET</div>
-        <div class="btn" id="btn-build"><span class="btn-icon">🪵</span>STAVĚT</div>
-    </div>
+    <div class="btn" id="btn-shoot"><span class="btn-icon">🔫</span>STŘÍLET</div>
+    <div class="btn" id="btn-build"><span class="btn-icon">🪵</span>STAVĚT</div>
 
     <div id="joystick-container">
         <div id="joystick"></div>
@@ -71,7 +71,7 @@
 
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x050811);
-        scene.fog = new THREE.FogExp2(0x050811, 0.035);
+        scene.fog = new THREE.FogExp2(0x050811, 0.025);
 
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -79,12 +79,16 @@
         renderer.shadowMap.enabled = true;
         document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0x1a233a, 0.9);
+        const ambientLight = new THREE.AmbientLight(0x2a334a, 1.2);
         scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
 
         // Terén
         const groundGeo = new THREE.PlaneGeometry(300, 300);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111e11, roughness: 1 });
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x112211, roughness: 0.9 });
         const ground = new THREE.Mesh(groundGeo, groundMat);
         ground.rotation.x = -Math.PI / 2;
         ground.receiveShadow = true;
@@ -92,19 +96,19 @@
 
         // Stromy
         const trees = [];
-        for(let i=0; i<150; i++) {
-            const x = (Math.random() - 0.5) * 250;
-            const z = (Math.random() - 0.5) * 250;
-            if(Math.hypot(x, z) > 10) { 
-                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 5);
+        for(let i=0; i<120; i++) {
+            const x = (Math.random() - 0.5) * 200;
+            const z = (Math.random() - 0.5) * 200;
+            if(Math.hypot(x, z) > 8) { 
+                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 5);
                 const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314 });
                 const trunk = new THREE.Mesh(trunkGeo, trunkMat);
                 trunk.position.set(x, 2.5, z);
                 
-                const leavesGeo = new THREE.ConeGeometry(2.5, 6, 6);
-                const leavesMat = new THREE.MeshStandardMaterial({ color: 0x0a2f1d });
+                const leavesGeo = new THREE.ConeGeometry(3, 7, 6);
+                const leavesMat = new THREE.MeshStandardMaterial({ color: 0x0a3f1d });
                 const leaves = new THREE.Mesh(leavesGeo, leavesMat);
-                leaves.position.set(x, 6.5, z);
+                leaves.position.set(x, 7, z);
 
                 scene.add(trunk);
                 scene.add(leaves);
@@ -112,36 +116,36 @@
             }
         }
 
-        // --- VYTVOŘENÍ VLASTNÍ POSTAVIČKY S KORUNOU (KRÁLOVNA) ---
+        // --- VĚTŠÍ A VIDITELNÁ POSTAVIČKA S KORUNOU ---
         function createPlayerMesh() {
             const group = new THREE.Group();
             
             // Tělo
-            const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.2);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff3366 }); // Stylová růžová/červená
+            const bodyGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.5);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff3366 }); 
             const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 0.6;
+            body.position.y = 0.75;
             group.add(body);
 
             // Hlava
-            const headGeo = new THREE.SphereGeometry(0.25, 16, 16);
+            const headGeo = new THREE.SphereGeometry(0.35, 16, 16);
             const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
             const head = new THREE.Mesh(headGeo, headMat);
-            head.position.y = 1.35;
+            head.position.y = 1.7;
             group.add(head);
 
-            // ZLATÁ KORUNA PRO KRÁLOVNU KÁJU
-            const crownGeo = new THREE.ConeGeometry(0.2, 0.3, 4);
+            // ZLATÁ KORUNA KRÁLOVNY
+            const crownGeo = new THREE.ConeGeometry(0.3, 0.4, 4);
             const crownMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.1 });
             const crown = new THREE.Mesh(crownGeo, crownMat);
-            crown.position.y = 1.65;
+            crown.position.y = 2.1;
             group.add(crown);
 
-            // Samopal v ruce postavy
-            const gunGeo = new THREE.BoxGeometry(0.1, 0.1, 0.6);
-            const gunMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            // Samopal
+            const gunGeo = new THREE.BoxGeometry(0.12, 0.12, 0.8);
+            const gunMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
             const gun = new THREE.Mesh(gunGeo, gunMat);
-            gun.position.set(0.3, 0.7, -0.2);
+            gun.position.set(0.4, 0.9, -0.3);
             group.add(gun);
 
             return group;
@@ -155,7 +159,7 @@
         let barricadesCount = 0;
         let playerPosX = 0, playerPosZ = 0, playerRotation = 0;
 
-        // Joystick
+        // --- OPRAVENÝ JOYSTICK (SPRÁVNÝ SMĚR) ---
         const joystick = document.getElementById('joystick');
         const joystickContainer = document.getElementById('joystick-container');
         let joyMove = { x: 0, y: 0 };
@@ -177,15 +181,19 @@
             const clampedDist = Math.min(dist, joyRadius);
             const angle = Math.atan2(dy, dx);
             joystick.style.transform = `translate(${Math.cos(angle) * clampedDist}px, ${Math.sin(angle) * clampedDist}px)`;
-            joyMove = { x: (Math.cos(angle) * clampedDist) / joyRadius, y: -(Math.sin(angle) * clampedDist) / joyRadius };
+            
+            // Opraveno znaménko pro správné otáčení
+            joyMove = { 
+                x: -(Math.cos(angle) * clampedDist) / joyRadius, 
+                y: -(Math.sin(angle) * clampedDist) / joyRadius 
+            };
         });
 
         document.getElementById('btn-shoot').addEventListener('touchstart', (e) => {
             e.preventDefault();
-            // Kácení / střelba
             trees.forEach((tree) => {
-                if(Math.hypot(playerPosX - tree.x, playerPosZ - tree.z) < 4) {
-                    wood += 2;
+                if(Math.hypot(playerPosX - tree.x, playerPosZ - tree.z) < 5) {
+                    wood += 3;
                     document.getElementById('wood-count').innerText = wood;
                 }
             });
@@ -197,8 +205,8 @@
             if(wood >= 15) {
                 wood -= 15;
                 document.getElementById('wood-count').innerText = wood;
-                const bx = playerPosX + Math.sin(playerRotation) * 2;
-                const bz = playerPosZ + Math.cos(playerRotation) * 2;
+                const bx = playerPosX + Math.sin(playerRotation) * 2.5;
+                const bz = playerPosZ + Math.cos(playerRotation) * 2.5;
                 spawnBarricade(bx, bz);
                 socket.emit('placeBarricade', { x: bx, z: bz });
             }
@@ -214,7 +222,6 @@
             document.getElementById('barricade-count').innerText = barricadesCount;
         }
 
-        // Multiplayer s ostatními
         const otherPlayers = {};
         socket.on('currentPlayers', (players) => {
             Object.keys(players).forEach((id) => {
@@ -237,8 +244,7 @@
             otherPlayers[info.id] = pMesh;
         }
 
-        // Game Loop
-        const speed = 0.12;
+        const speed = 0.15;
         function animate() {
             requestAnimationFrame(animate);
 
@@ -252,9 +258,13 @@
                 myPlayer.position.set(playerPosX, 0, playerPosZ);
             }
 
-            // KAMERA SLEDUJE POSTAVU Z3. OSOBY (SEZHORA)
-            camera.position.set(playerPosX - Math.sin(playerRotation) * 6, playerPosY = 4.5, playerPosZ - Math.cos(playerRotation) * 6);
-            camera.lookAt(playerPosX, playerPosY - 1, playerPosZ);
+            // Kamera blízko postavičky, aby byla dokonale vidět
+            camera.position.set(
+                playerPosX - Math.sin(playerRotation) * 5, 
+                3.5, 
+                playerPosZ - Math.cos(playerRotation) * 5
+            );
+            camera.lookAt(playerPosX, 1.5, playerPosZ);
 
             socket.emit('playerMovement', {
                 x: playerPosX, y: 0, z: playerPosZ, rotation: playerRotation
