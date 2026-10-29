@@ -1,518 +1,553 @@
+
 <!DOCTYPE html>
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Gucci Kaja 👑</title>
+<meta name="theme-color" content="#101323">
+<title>GUCCI KAJA — World</title>
 <style>
+:root{--glass:rgba(15,19,38,.88);--gold:#ffd76b;--pink:#ff76c8}
 *{box-sizing:border-box}
-html,body,#game{margin:0;width:100%;height:100%;overflow:hidden}
-body{font-family:system-ui,sans-serif;background:#8bd8ff;color:white;touch-action:none}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#91c9ff;font-family:system-ui,-apple-system,sans-serif;touch-action:none}
 canvas{display:block}
-.panel{background:#191638eF;border:1px solid #ffffff45;border-radius:20px;padding:22px;box-shadow:0 8px 35px #25134766}
-#login{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#9c7aff55,#ff72c855)}
-.loginbox{width:min(400px,100%);text-align:center}
-.logo{font-size:clamp(38px,10vw,58px);font-weight:1000;letter-spacing:-2px;color:#ff83d9;text-shadow:0 4px #803b9a}
-.crown{font-size:48px}
-input{font:inherit;color:white;background:#10112d;border:1px solid #a69ce4;border-radius:12px;padding:13px;width:100%;outline:none}
-button{font:inherit;font-weight:800;color:white;border:0;border-radius:12px;padding:11px;background:linear-gradient(135deg,#ff65c8,#855bff);touch-action:manipulation}
-#join{width:100%;margin-top:12px}
-.small{font-size:12px;opacity:.8;line-height:1.5}
-#hud{display:none;position:fixed;inset:0;pointer-events:none}
-#top{position:absolute;top:10px;left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
-.pill{background:#191638dc;padding:9px 11px;border-radius:12px;font-size:12px;font-weight:bold}
-#tools{position:absolute;top:62px;right:10px;display:grid;gap:7px;pointer-events:auto}
-#tools button{font-size:12px}
-#joy{position:absolute;bottom:25px;left:20px;width:125px;height:125px;border:2px solid #ffffff70;border-radius:50%;background:#19163866;pointer-events:auto;touch-action:none}
-#stick{position:absolute;left:36px;top:36px;width:49px;height:49px;border-radius:50%;background:linear-gradient(135deg,#ff8dd5,#8876ff);border:2px solid white}
-#buttons{position:absolute;bottom:23px;right:14px;display:grid;grid-template-columns:64px 64px;gap:9px;pointer-events:auto}
-.act{height:59px;font-size:11px;padding:4px;border:1px solid #ffffff80;border-radius:50%}
-#jump{height:72px;width:72px}
-#chatbox{position:absolute;left:10px;top:100px;width:min(220px,55vw);pointer-events:auto}
-#messages{font-size:11px;text-shadow:0 1px 4px #000;max-height:85px;overflow:hidden}
-#chatrow{display:flex;gap:4px;margin-top:5px}
-#chatrow input{font-size:11px;padding:8px;min-width:0}
-#chatrow button{padding:6px}
-#inventory{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto}
-.slot{height:36px;width:36px;border:2px solid #ffffff60;border-radius:7px;background:#242047df;display:grid;place-items:center;font-size:19px}
-.slot.selected{border-color:#fff17b;box-shadow:0 0 10px #ffe875}
-#toast{position:absolute;bottom:160px;left:50%;transform:translateX(-50%);background:#191638eF;padding:8px 13px;border-radius:20px;font-size:12px;opacity:0;white-space:nowrap}
-@media(min-width:750px){#joy{width:145px;height:145px}#stick{left:45px;top:45px}}
+button,input{font:inherit}
+#game{position:fixed;inset:0}
+#top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.panel{background:var(--glass);color:white;border:1px solid #ffffff25;border-radius:16px;padding:10px 13px;backdrop-filter:blur(12px);box-shadow:0 5px 25px #0002}
+.logo{font-weight:1000;letter-spacing:1px;font-size:17px;color:var(--gold)}
+.small{font-size:11px;color:#c6cce0}
+#stats{text-align:right;font-size:12px}
+#cross{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);color:white;font-size:25px;text-shadow:0 2px 6px black;pointer-events:none}
+#bottom{position:absolute;left:12px;right:12px;bottom:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;pointer-events:none}
+#bottom>*{pointer-events:auto}
+#joy{width:116px;height:116px;border-radius:50%;background:#10132375;border:2px solid #ffffff65;position:relative;touch-action:none;flex-shrink:0}
+#knob{position:absolute;width:44px;height:44px;left:34px;top:34px;border-radius:50%;background:#ffffffb9;border:2px solid white;pointer-events:none}
+#actions{display:flex;gap:7px;align-items:flex-end}
+.action{width:59px;height:59px;border:1px solid #ffffff65;border-radius:18px;background:var(--glass);color:white;font-size:22px;font-weight:900;box-shadow:0 4px 14px #0003;touch-action:manipulation}
+.action:active{transform:scale(.94);background:#454b68}
+.action span{display:block;font-size:9px;font-weight:700;margin-top:2px}
+#jump{width:66px;height:66px;border-radius:50%;background:#a74dffdd}
+#chatbox{position:absolute;left:12px;top:90px;width:min(260px,67vw);pointer-events:none}
+#messages{color:white;font-size:12px;text-shadow:0 1px 3px black;max-height:100px;overflow:hidden}
+#chatrow{display:flex;gap:4px;pointer-events:auto;margin-top:5px}
+#chatinput{min-width:0;width:100%;border:1px solid #ffffff44;border-radius:9px;background:#101323d9;color:white;padding:8px;font-size:12px}
+#send{border:0;border-radius:9px;background:var(--gold);padding:7px 10px;font-weight:900}
+#tools{position:absolute;top:85px;right:12px;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.tool{background:var(--glass);color:white;border:1px solid #ffffff33;border-radius:11px;padding:8px 10px;font-size:12px}
+.tool.selected{border-color:var(--gold);color:var(--gold)}
+#lookhint{position:absolute;bottom:140px;left:50%;transform:translateX(-50%);font-size:11px;color:white;background:#1118279c;padding:5px 10px;border-radius:20px;white-space:nowrap;pointer-events:none}
+#start{position:absolute;inset:0;background:linear-gradient(160deg,#101323ed,#20294bea);display:flex;align-items:center;justify-content:center;padding:22px;z-index:10}
+#card{width:min(390px,100%);padding:26px;background:#171c30;border:1px solid #ffffff26;border-radius:26px;color:white;box-shadow:0 25px 80px #0006}
+#card h1{font-size:34px;line-height:1;margin:0 0 8px;color:var(--gold);letter-spacing:1px}
+#card p{font-size:13px;color:#c3cbe1;line-height:1.6}
+#name{width:100%;padding:13px;border-radius:12px;border:1px solid #ffffff35;background:#0c1020;color:white;margin:10px 0}
+#play{width:100%;padding:14px;border:0;border-radius:13px;background:linear-gradient(100deg,#ffcf62,#ff8dba);font-weight:1000;color:#171323}
+#status{font-size:11px;color:#aab5d1;margin-top:12px}
+#notice{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#111827e8;color:white;padding:12px 18px;border-radius:13px;display:none;pointer-events:none}
+@media(min-width:800px){#joy{width:125px;height:125px}#knob{left:38px;top:38px}#bottom{bottom:20px}#tools{top:100px}#lookhint{bottom:155px}}
 </style>
 </head>
 <body>
 <div id="game"></div>
 
-<div id="login">
- <div class="loginbox panel">
-  <div class="crown">👑</div>
-  <div class="logo">Gucci Kaja</div>
-  <h3>✨ Kouzelný blokový svět ✨</h3>
-  <p>Postav si svůj hrad a pozvi kamarády!</p>
-  <input id="nick" maxlength="16" placeholder="Tvoje přezdívka" autocomplete="nickname">
-  <button id="join">👑 HRÁT</button>
-  <p class="small">Pošli kamarádům odkaz na tuto hru. Zadají si přezdívku a připojí se do společného světa.</p>
- </div>
+<div id="top">
+  <div class="panel">
+    <div class="logo">👑 GUCCI KAJA</div>
+    <div class="small">YOUR WORLD · YOUR RULES</div>
+  </div>
+  <div class="panel" id="stats">
+    <div id="connection">Připojování…</div>
+    <div id="players">Hráči: 1</div>
+  </div>
 </div>
 
-<div id="hud">
- <div id="top">
-  <div class="pill">👑 Gucci Kaja</div>
-  <div class="pill" id="count">👥 1 hráč</div>
-  <button id="invite">🔗 Pozvat</button>
- </div>
- <div id="tools">
-  <button id="camera">🎥 Kamera</button>
-  <button id="mine">⛏️ Těžit</button>
-  <button id="build">🧱 Stavět</button>
- </div>
- <div id="chatbox">
+<div id="cross">+</div>
+
+<div id="chatbox">
   <div id="messages"></div>
   <div id="chatrow">
-   <input id="chat" maxlength="140" placeholder="Zpráva kamarádům">
-   <button id="send">➤</button>
+    <input id="chatinput" maxlength="180" placeholder="Napiš zprávu…">
+    <button id="send">➤</button>
   </div>
- </div>
- <div id="joy"><div id="stick"></div></div>
- <div id="buttons">
-  <button class="act" id="jump">⬆️<br>SKOK</button>
-  <button class="act" id="pick">🌸<br>BLOK</button>
- </div>
- <div id="inventory">
-  <div class="slot selected" data-type="grass">🌿</div>
-  <div class="slot" data-type="dirt">🟫</div>
-  <div class="slot" data-type="stone">🪨</div>
-  <div class="slot" data-type="wood">🪵</div>
-  <div class="slot" data-type="pink">🌸</div>
- </div>
- <div id="toast"></div>
+</div>
+
+<div id="tools">
+  <button class="tool selected" data-type="grass">🟩 Tráva</button>
+  <button class="tool" data-type="dirt">🟫 Hlína</button>
+  <button class="tool" data-type="stone">⬜ Kámen</button>
+  <button class="tool" data-type="gold">🟨 Zlato</button>
+  <button class="tool" data-type="pink">🩷 Pink</button>
+  <button class="tool" id="camera">📷 Kamera</button>
+</div>
+
+<div id="lookhint">Táhni prstem po obrazovce pro otočení kamery</div>
+
+<div id="bottom">
+  <div id="joy"><div id="knob"></div></div>
+  <div id="actions">
+    <button class="action" id="break">⛏️<span>BOURAT</span></button>
+    <button class="action" id="place">🧱<span>STAVĚT</span></button>
+    <button class="action" id="jump">⬆️<span>SKOK</span></button>
+  </div>
+</div>
+
+<div id="notice"></div>
+
+<div id="start">
+  <div id="card">
+    <div style="font-size:45px;margin-bottom:12px">👑 💎 🏰</div>
+    <h1>GUCCI KAJA</h1>
+    <div style="color:#ff8dba;font-weight:800;font-size:12px;letter-spacing:2px">BUILD YOUR KINGDOM</div>
+    <p>Vstup do 3D světa. Stavěj, nič bloky, prozkoumávej ostrov a potkávej další hráče online.</p>
+    <label for="name" style="font-size:12px">Tvoje přezdívka</label>
+    <input id="name" maxlength="18" placeholder="Např. GucciKaja" value="GucciKaja">
+    <button id="play">VSTOUPIT DO SVĚTA →</button>
+    <div id="status">Připravuji svět…</div>
+  </div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script type="module">
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
 
-const socket=window.io();
-const root=document.querySelector("#game");
-const scene=new THREE.Scene();
-scene.background=new THREE.Color("#91d9ff");
-scene.fog=new THREE.Fog("#91d9ff",28,75);
+const $ = id => document.getElementById(id);
+const game = $("game");
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8ecbff);
+scene.fog = new THREE.Fog(0x8ecbff, 35, 105);
 
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,150);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+const camera = new THREE.PerspectiveCamera(68, innerWidth/innerHeight, .1, 250);
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
 renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled=true;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-root.appendChild(renderer.domElement);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+game.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xe5f8ff,0x62794c,2));
-const sun=new THREE.DirectionalLight(0xfff0d5,2.5);
-sun.position.set(-10,22,10);
-sun.castShadow=true;
+scene.add(new THREE.HemisphereLight(0xd9efff,0x64704a,2.0));
+const sun = new THREE.DirectionalLight(0xfff0d0,2.5);
+sun.position.set(20,35,15);
+sun.castShadow = true;
 sun.shadow.mapSize.set(1024,1024);
 scene.add(sun);
 
-const material={
- grass:new THREE.MeshStandardMaterial({color:0x65c85b}),
- dirt:new THREE.MeshStandardMaterial({color:0x95603f}),
- stone:new THREE.MeshStandardMaterial({color:0x9198a9}),
- wood:new THREE.MeshStandardMaterial({color:0x9b6035}),
- pink:new THREE.MeshStandardMaterial({color:0xff83d5}),
- leaf:new THREE.MeshStandardMaterial({color:0x35a858}),
- water:new THREE.MeshStandardMaterial({color:0x35c9f0}),
- gold:new THREE.MeshStandardMaterial({color:0xffd342,metalness:.5,roughness:.3}),
- skin:new THREE.MeshStandardMaterial({color:0xffd0ad}),
- hair:new THREE.MeshStandardMaterial({color:0x87482b}),
- dress:new THREE.MeshStandardMaterial({color:0xe94cae}),
- white:new THREE.MeshStandardMaterial({color:0xfff5ff})
+const mats = {
+  grass:new THREE.MeshStandardMaterial({color:0x64bd55,roughness:1}),
+  dirt:new THREE.MeshStandardMaterial({color:0x91603e,roughness:1}),
+  stone:new THREE.MeshStandardMaterial({color:0x9ba5b4,roughness:.9}),
+  gold:new THREE.MeshStandardMaterial({color:0xffc928,metalness:.55,roughness:.25}),
+  pink:new THREE.MeshStandardMaterial({color:0xff73c9,roughness:.5}),
+  wood:new THREE.MeshStandardMaterial({color:0x84502b}),
+  leaf:new THREE.MeshStandardMaterial({color:0x22874d}),
+  white:new THREE.MeshStandardMaterial({color:0xffffff}),
+  skin:new THREE.MeshStandardMaterial({color:0xffd0a5}),
+  purple:new THREE.MeshStandardMaterial({color:0x8748e8}),
+  black:new THREE.MeshStandardMaterial({color:0x242337})
 };
-const cube=new THREE.BoxGeometry(1,1,1);
-const blocks=new Map(),remotes=new Map();
-const key=(x,y,z)=>`${Math.round(x)},${Math.round(y)},${Math.round(z)}`;
 
-function addBlock(x,y,z,type="grass",send=false){
- x=Math.round(x);y=Math.round(y);z=Math.round(z);
- const k=key(x,y,z);
- if(blocks.has(k))return;
- const mesh=new THREE.Mesh(cube,material[type]||material.grass);
- mesh.position.set(x,y,z);
- mesh.castShadow=true;
- mesh.receiveShadow=true;
- mesh.userData={x,y,z,type};
- scene.add(mesh);
- blocks.set(k,mesh);
- if(send)socket.emit("placeBlock",{x,y,z,type});
-}
-function removeBlock(x,y,z,send=false){
- const k=key(x,y,z),m=blocks.get(k);
- if(!m)return;
- scene.remove(m);
- blocks.delete(k);
- if(send)socket.emit("breakBlock",{x,y,z});
-}
+const cubeGeo = new THREE.BoxGeometry(1,1,1);
+const blockMeshes = new Map();
+const remotePlayers = new Map();
+const raycaster = new THREE.Raycaster();
+const center = new THREE.Vector2(0,0);
 
-// Základní terén
-for(let x=-18;x<=18;x++){
- for(let z=-18;z<=18;z++){
-  addBlock(x,0,z,"grass");
-  addBlock(x,-1,z,"dirt");
- }
-}
-
-// Stromy
-function tree(x,z){
- for(let y=1;y<4;y++)addBlock(x,y,z,"wood");
- for(let dx=-1;dx<=1;dx++){
-  for(let dz=-1;dz<=1;dz++){
-   for(let y=3;y<=4;y++){
-    if(Math.abs(dx)+Math.abs(dz)<3)
-     addBlock(x+dx,y,z+dz,"leaf");
-   }
-  }
- }
-}
-[[-7,-6],[8,-8],[-10,7],[11,8],[4,12],[-13,-1]]
-.forEach(([x,z])=>tree(x,z));
-
-// Princezna s korunou. Hlava, tělo, ruce i nohy jsou vidět.
-function makePrincess(){
- const g=new THREE.Group();
- function part(mat,x,y,z,sx,sy,sz){
-  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);
-  m.position.set(x,y,z);
-  m.castShadow=true;
-  g.add(m);
-  return m;
- }
- part(material.hair,0,1.68,0,.68,.78,.48);
- part(material.skin,0,1.69,-.25,.49,.53,.12);
- part(material.hair,0,2.03,0,.68,.18,.49);
- // Korunka
- part(material.gold,0,2.17,0,.55,.12,.43);
- for(let i=0;i<5;i++){
-  part(material.gold,-.22+i*.11,2.29,0,.075,.17,.09);
- }
- part(material.pink,0,2.19,-.22,.09,.07,.03);
- // Šaty a ruce
- part(material.dress,0,1.08,0,.72,.72,.45);
- part(material.white,0,1.38,-.02,.42,.17,.46);
- part(material.skin,-.43,1.16,0,.18,.54,.2);
- part(material.skin,.43,1.16,0,.18,.54,.2);
- // Nohy a boty
- part(material.dress,-.19,.48,0,.23,.47,.25);
- part(material.dress,.19,.48,0,.23,.47,.25);
- part(material.white,-.19,.18,-.04,.29,.16,.38);
- part(material.white,.19,.18,-.04,.29,.16,.38);
- return g;
-}
-
-const player=makePrincess();
-scene.add(player);
-const pos=new THREE.Vector3(0,0,5);
-let joined=false,nick="Kája",myId=null;
-let selected="grass",yaw=0,camMode=0;
-let velocityY=0,grounded=true,jumpRequested=false;
-let joyX=0,joyY=0,lastSent=0;
+let socket=null, joined=false, myId=null;
+let selectedType="grass", cameraMode=0;
+let yaw=0, pitch=.23;
+let joyX=0, joyY=0, velocityY=0;
+let onGround=false, lastMove=0, lastChat=0;
+let playerName="GucciKaja";
+const world={x:0,y:1.01,z:0};
+const keys={};
 const clock=new THREE.Clock();
 
-function toast(msg){
- const el=document.querySelector("#toast");
- el.textContent=msg;
- el.style.opacity=1;
- clearTimeout(toast.timer);
- toast.timer=setTimeout(()=>el.style.opacity=0,1900);
+const avatar = new THREE.Group();
+scene.add(avatar);
+
+function box(parent, material, x,y,z, sx,sy,sz) {
+  const mesh=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);
+  mesh.position.set(x,y,z);
+  mesh.castShadow=true;
+  mesh.receiveShadow=true;
+  parent.add(mesh);
+  return mesh;
 }
 
-function enter(){
- if(joined)return;
- nick=(document.querySelector("#nick").value||"Kája")
- .trim().slice(0,16)||"Kája";
- joined=true;
- document.querySelector("#login").style.display="none";
- document.querySelector("#hud").style.display="block";
- socket.emit("joinGame",nick);
- toast("Vítej v království, "+nick+"!");
-}
-document.querySelector("#join").onclick=enter;
-document.querySelector("#nick").onkeydown=e=>{
- if(e.key==="Enter")enter();
-};
+// Hráč s korunou a barevným oblečením
+box(avatar,mats.purple,0,.78,0,.58,.68,.34);
+box(avatar,mats.skin,0,1.35,0,.43,.43,.4);
+box(avatar,mats.black,0,1.53,0,.44,.12,.42);
+box(avatar,mats.white,-.105,1.37,.205,.055,.055,.025);
+box(avatar,mats.white,.105,1.37,.205,.055,.055,.025);
+box(avatar,mats.black,-.105,1.37,.225,.025,.035,.02);
+box(avatar,mats.black,.105,1.37,.225,.025,.035,.02);
+box(avatar,mats.gold,0,1.65,0,.46,.12,.25);
+box(avatar,mats.gold,-.15,1.77,0,.08,.15,.13);
+box(avatar,mats.gold,0,1.80,0,.08,.20,.13);
+box(avatar,mats.gold,.15,1.77,0,.08,.15,.13);
+box(avatar,mats.black,-.17,.22,0,.19,.43,.24);
+box(avatar,mats.black,.17,.22,0,.19,.43,.24);
 
-function label(name){
- const c=document.createElement("canvas");
- c.width=256;c.height=64;
- const ctx=c.getContext("2d");
- ctx.fillStyle="#20143ddd";
- ctx.beginPath();
- ctx.roundRect(5,5,246,54,16);
- ctx.fill();
- ctx.font="bold 24px system-ui";
- ctx.textAlign="center";
- ctx.fillStyle="white";
- ctx.fillText(name.slice(0,16),128,40);
- const texture=new THREE.CanvasTexture(c);
- const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false}));
- sprite.scale.set(2.2,.55,1);
- sprite.position.y=2.85;
- return sprite;
-}
-function addRemote(p){
- if(!p||p.id===myId||remotes.has(p.id))return;
- const g=makePrincess();
- g.position.set(p.x||0,p.y||0,p.z||0);
- g.add(label(p.nick||"Kamarád"));
- scene.add(g);
- remotes.set(p.id,g);
-}
-function moveRemote(p){
- const g=remotes.get(p.id);
- if(!g)return;
- g.position.set(p.x||0,p.y||0,p.z||0);
- g.rotation.y=p.rot||0;
-}
-function updateCount(){
- document.querySelector("#count").textContent=
- "👥 "+(remotes.size+1)+" hráčů";
+const nameSprites = new Map();
+
+function makeLabel(text,color="#ffffff") {
+  const c=document.createElement("canvas");
+  c.width=512;c.height=128;
+  const ctx=c.getContext("2d");
+  ctx.font="bold 44px system-ui";
+  ctx.textAlign="center";
+  ctx.fillStyle="#15172acc";
+  ctx.fillRect(36,24,440,78);
+  ctx.fillStyle=color;
+  ctx.fillText(text,256,77,420);
+  const tex=new THREE.CanvasTexture(c);
+  const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  sprite.scale.set(2.4,.6,1);
+  return sprite;
 }
 
-socket.on("connect",()=>{
- if(joined)socket.emit("joinGame",nick);
-});
-socket.on("joined",p=>{
- myId=p.id;
- toast("Připojeno! Pozvi kamarády.");
-});
-socket.on("worldState",data=>{
- (data.blocks||[]).forEach(b=>addBlock(b.x,b.y,b.z,b.type));
- (data.players||[]).forEach(addRemote);
- updateCount();
-});
-socket.on("playerJoined",p=>{
- addRemote(p);updateCount();
- toast((p.nick||"Kamarád")+" se připojil!");
-});
-socket.on("playerMoved",moveRemote);
-socket.on("playerLeft",id=>{
- if(remotes.has(id)){
-  scene.remove(remotes.get(id));
-  remotes.delete(id);
- }
- updateCount();
-});
-socket.on("blockPlaced",b=>addBlock(b.x,b.y,b.z,b.type));
-socket.on("blockBroken",b=>removeBlock(b.x,b.y,b.z));
-socket.on("chatMessage",d=>{
- const el=document.createElement("div");
- el.textContent=d.nick+": "+d.message;
- document.querySelector("#messages").appendChild(el);
- while(document.querySelector("#messages").children.length>5){
-  document.querySelector("#messages").firstChild.remove();
- }
-});
+const myLabel=makeLabel(playerName,"#ffdf80");
+myLabel.position.set(0,2.25,0);
+avatar.add(myLabel);
 
-function invite(){
- const url=location.href;
- if(navigator.share){
-  navigator.share({title:"Gucci Kaja",text:"Pojď si se mnou zahrát! 👑",url}).catch(()=>{});
- }else if(navigator.clipboard){
-  navigator.clipboard.writeText(url)
-  .then(()=>toast("Odkaz zkopírován!"))
-  .catch(()=>prompt("Zkopíruj odkaz:",url));
- }else prompt("Zkopíruj odkaz:",url);
+function addBlock(b) {
+  const key=`${b.x},${b.y},${b.z}`;
+  if(blockMeshes.has(key)) return;
+  const mesh=new THREE.Mesh(cubeGeo,mats[b.type]||mats.grass);
+  mesh.position.set(b.x,b.y,b.z);
+  mesh.castShadow=true;
+  mesh.receiveShadow=true;
+  mesh.userData.block={x:b.x,y:b.y,z:b.z,type:b.type};
+  scene.add(mesh);
+  blockMeshes.set(key,mesh);
 }
-document.querySelector("#invite").onclick=invite;
 
-document.querySelector("#camera").onclick=()=>{
- camMode=(camMode+1)%3;
- toast("Pohled kamery změněn");
-};
+function removeBlock(b) {
+  const key=`${b.x},${b.y},${b.z}`;
+  const mesh=blockMeshes.get(key);
+  if(mesh){scene.remove(mesh);blockMeshes.delete(key);}
+}
 
-document.querySelectorAll(".slot").forEach(el=>{
- el.onclick=()=>{
-  document.querySelectorAll(".slot").forEach(s=>s.classList.remove("selected"));
-  el.classList.add("selected");
-  selected=el.dataset.type;
- };
+function createTree(x,z) {
+  box(scene,mats.wood,x,.8,z,.3,1.6,.3);
+  for(let y=1.5;y<=2.6;y+=.5){
+    const leaves=box(scene,mats.leaf,x,y,z,1.5-(y-1.5)*.25,1,1.5-(y-1.5)*.25);
+    leaves.userData.decoration=true;
+  }
+}
+
+function createDecorations(){
+  for(let i=0;i<20;i++){
+    const x=Math.floor(Math.random()*48)-24;
+    const z=Math.floor(Math.random()*48)-24;
+    if(Math.abs(x)<5&&Math.abs(z)<5)continue;
+    if(Math.random()<.7)createTree(x,z);
+  }
+  // Dekorativní královský portál
+  for(let y=1;y<=4;y++){
+    addBlock({x:5,y,z:-5,type:"gold"});
+    addBlock({x:8,y,z:-5,type:"gold"});
+  }
+  for(let x=5;x<=8;x++)addBlock({x,y:5,z:-5,type:"pink"});
+}
+
+function makeRemote(p){
+  if(remotePlayers.has(p.id))return;
+  const group=new THREE.Group();
+  box(group,mats.pink,0,.78,0,.58,.68,.34);
+  box(group,mats.skin,0,1.35,0,.43,.43,.4);
+  box(group,mats.gold,0,1.65,0,.46,.12,.25);
+  const label=makeLabel(p.name);
+  label.position.y=2.2;
+  group.add(label);
+  group.position.set(p.x,p.y-1.01,p.z);
+  scene.add(group);
+  remotePlayers.set(p.id,group);
+}
+
+function removeRemote(id){
+  const p=remotePlayers.get(id);
+  if(p){scene.remove(p);remotePlayers.delete(id);}
+}
+
+function notice(text){
+  const el=$("notice");
+  el.textContent=text;
+  el.style.display="block";
+  clearTimeout(notice.timer);
+  notice.timer=setTimeout(()=>el.style.display="none",1800);
+}
+
+function connect(){
+  if(typeof io!=="function"){
+    $("status").textContent="Chybí Socket.IO. Zkontroluj server.js.";
+    return;
+  }
+  socket=io({reconnection:true});
+  socket.on("connect",()=>{
+    $("connection").textContent="🟢 Online";
+    socket.emit("player:join",{name:playerName});
+  });
+  socket.on("disconnect",()=>{
+    $("connection").textContent="🔴 Odpojeno";
+  });
+  socket.on("connect_error",()=>{
+    $("connection").textContent="🔴 Připojení selhalo";
+  });
+  socket.on("world:init",data=>{
+    data.blocks.forEach(addBlock);
+    data.players.forEach(makeRemote);
+  });
+  socket.on("player:joined",p=>{
+    myId=p.id;
+    joined=true;
+    $("players").textContent="Online";
+  });
+  socket.on("player:created",makeRemote);
+  socket.on("player:moved",p=>{
+    const r=remotePlayers.get(p.id);
+    if(r){
+      r.position.set(p.x,p.y-1.01,p.z);
+      r.rotation.y=p.rotation||0;
+    }
+  });
+  socket.on("player:left",removeRemote);
+  socket.on("players:count",n=>$("players").textContent=`Hráči: ${n}`);
+  socket.on("block:placed",addBlock);
+  socket.on("block:broken",removeBlock);
+  socket.on("chat:message",m=>{
+    const el=document.createElement("div");
+    el.textContent=`${m.name}: ${m.message}`;
+    $("messages").appendChild(el);
+    while($("messages").children.length>5)
+      $("messages").firstChild.remove();
+    setTimeout(()=>el.remove(),12000);
+  });
+}
+
+$("play").addEventListener("click",()=>{
+  playerName=$("name").value.trim().slice(0,18)||"GucciKaja";
+  myLabel.material.map.dispose();
+  myLabel.material.map=null;
+  avatar.remove(myLabel);
+  const label=makeLabel(playerName,"#ffdf80");
+  label.position.set(0,2.25,0);
+  avatar.add(label);
+  $("start").style.display="none";
+  connect();
+  createDecorations();
+  notice("Vítej ve světě Gucci Kaja!");
 });
-document.querySelector("#pick").onclick=()=>{
- const types=["grass","dirt","stone","wood","pink"];
- selected=types[(types.indexOf(selected)+1)%types.length];
- document.querySelectorAll(".slot").forEach(el=>{
-  el.classList.toggle("selected",el.dataset.type===selected);
- });
- toast("Vybraný blok: "+selected);
-};
 
-const raycaster=new THREE.Raycaster();
+$("name").addEventListener("keydown",e=>{
+  if(e.key==="Enter")$("play").click();
+});
+
+document.querySelectorAll("[data-type]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    selectedType=btn.dataset.type;
+    document.querySelectorAll("[data-type]").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+  });
+});
+
+$("camera").addEventListener("click",()=>{
+  cameraMode=(cameraMode+1)%3;
+  notice(["Kamera: za hráčem","Kamera: blíže","Kamera: dál"][cameraMode]);
+});
+
 function targetBlock(){
- raycaster.setFromCamera(new THREE.Vector2(0,0),camera);
- const hits=raycaster.intersectObjects([...blocks.values()]);
- return hits.find(h=>h.distance<7);
+  raycaster.setFromCamera(center,camera);
+  const meshes=Array.from(blockMeshes.values());
+  const hits=raycaster.intersectObjects(meshes,false);
+  return hits.find(h=>h.distance<7);
 }
-function mine(){
- const h=targetBlock();
- if(!h){toast("Namiř kameru na blok");return}
- const p=h.object.userData;
- if(p.y<=0){toast("Tento blok nejde vytěžit");return}
- removeBlock(p.x,p.y,p.z,true);
-}
-function build(){
- const h=targetBlock();
- if(!h){toast("Namiř na blok, vedle kterého chceš stavět");return}
- const normal=h.face.normal.clone()
- .transformDirection(h.object.matrixWorld);
- const p=h.object.position.clone().add(normal);
- if(Math.hypot(p.x-pos.x,p.z-pos.z)<1.3){
-  toast("Moc blízko postavičky");
-  return;
- }
- addBlock(p.x,p.y,p.z,selected,true);
-}
-document.querySelector("#mine").onclick=mine;
-document.querySelector("#build").onclick=build;
 
-function sendChat(){
- const input=document.querySelector("#chat");
- const value=input.value.trim();
- if(value)socket.emit("chatMessage",value);
- input.value="";
+function placeBlock(){
+  if(!socket||!joined)return;
+  const hit=targetBlock();
+  if(!hit)return notice("Zaměř blok, vedle kterého chceš stavět.");
+  const n=hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+  const p=hit.object.position.clone().add(n);
+  const x=Math.round(p.x),y=Math.round(p.y),z=Math.round(p.z);
+  if(y<1)return;
+  if(Math.abs(x-world.x)<.8&&Math.abs(z-world.z)<.8&&y<world.y+2)
+    return notice("Nemůžeš stavět do sebe.");
+  socket.emit("block:place",{x,y,z,type:selectedType});
 }
-document.querySelector("#send").onclick=sendChat;
-document.querySelector("#chat").onkeydown=e=>{
- if(e.key==="Enter")sendChat();
-};
 
-// Dotykový joystick
-const joy=document.querySelector("#joy");
-const stick=document.querySelector("#stick");
-let pointer=null;
-function setJoy(e){
- const r=joy.getBoundingClientRect();
- const dx=e.clientX-(r.left+r.width/2);
- const dy=e.clientY-(r.top+r.height/2);
- const max=r.width*.34;
- const len=Math.hypot(dx,dy)||1;
- const x=dx/len*Math.min(len,max);
- const y=dy/len*Math.min(len,max);
- joyX=x/max;joyY=y/max;
- stick.style.transform=`translate(${x}px,${y}px)`;
+function breakBlock(){
+  if(!socket||!joined)return;
+  const hit=targetBlock();
+  if(!hit)return notice("Zaměř blok, který chceš zbourat.");
+  const b=hit.object.userData.block;
+  if(!b)return;
+  socket.emit("block:break",b);
 }
-function resetJoy(){
- pointer=null;joyX=0;joyY=0;
- stick.style.transform="translate(0,0)";
-}
-joy.onpointerdown=e=>{
- pointer=e.pointerId;
- joy.setPointerCapture(e.pointerId);
- setJoy(e);
-};
-joy.onpointermove=e=>{
- if(pointer===e.pointerId)setJoy(e);
-};
-joy.onpointerup=resetJoy;
-joy.onpointercancel=resetJoy;
 
-document.querySelector("#jump").onpointerdown=e=>{
- e.preventDefault();
- jumpRequested=true;
-};
-const keys={};
-addEventListener("keydown",e=>{
- keys[e.key.toLowerCase()]=true;
- if(e.code==="Space")jumpRequested=true;
+$("place").addEventListener("click",placeBlock);
+$("break").addEventListener("click",breakBlock);
+$("jump").addEventListener("click",()=>{
+  if(onGround){velocityY=7.2;onGround=false;}
 });
-addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-// Myš nebo posunutí prstu otáčí kamerou
-let drag=null;
+$("send").addEventListener("click",sendChat);
+$("chatinput").addEventListener("keydown",e=>{
+  if(e.key==="Enter")sendChat();
+});
+function sendChat(){
+  const input=$("chatinput");
+  const message=input.value.trim();
+  if(!message||!socket||!joined)return;
+  socket.emit("chat:send",{message});
+  input.value="";
+}
+
+// Virtuální joystick
+const joy=$("joy"),knob=$("knob");
+let joyPointer=null;
+function joyUpdate(e){
+  const r=joy.getBoundingClientRect();
+  let dx=e.clientX-(r.left+r.width/2);
+  let dy=e.clientY-(r.top+r.height/2);
+  const max=r.width*.32;
+  const len=Math.hypot(dx,dy);
+  if(len>max){dx=dx/len*max;dy=dy/len*max;}
+  joyX=dx/max;
+  joyY=dy/max;
+  knob.style.left=`${r.width/2-22+dx}px`;
+  knob.style.top=`${r.height/2-22+dy}px`;
+}
+joy.addEventListener("pointerdown",e=>{
+  joyPointer=e.pointerId;
+  joy.setPointerCapture(e.pointerId);
+  joyUpdate(e);
+});
+joy.addEventListener("pointermove",e=>{
+  if(e.pointerId===joyPointer)joyUpdate(e);
+});
+function joyEnd(){
+  joyPointer=null;joyX=0;joyY=0;
+  knob.style.left="calc(50% - 22px)";
+  knob.style.top="calc(50% - 22px)";
+}
+joy.addEventListener("pointerup",joyEnd);
+joy.addEventListener("pointercancel",joyEnd);
+
+// Myš a dotyk pro otáčení kamery
+let lookPointer=null,lastX=0,lastY=0;
 renderer.domElement.addEventListener("pointerdown",e=>{
- if(e.pointerType==="mouse")drag={x:e.clientX,y:e.clientY};
+  if(e.pointerType==="mouse"&&e.button!==0)return;
+  if(e.clientY>innerHeight-150&&e.clientX<155)return;
+  lookPointer=e.pointerId;
+  lastX=e.clientX;lastY=e.clientY;
+  renderer.domElement.setPointerCapture(e.pointerId);
 });
 renderer.domElement.addEventListener("pointermove",e=>{
- if(drag){
-  yaw-=(e.clientX-drag.x)*.006;
-  drag={x:e.clientX,y:e.clientY};
- }
+  if(e.pointerId!==lookPointer)return;
+  const dx=e.clientX-lastX,dy=e.clientY-lastY;
+  lastX=e.clientX;lastY=e.clientY;
+  yaw-=dx*.006;
+  pitch=Math.max(-.45,Math.min(.8,pitch+dy*.004));
 });
-renderer.domElement.addEventListener("pointerup",()=>drag=null);
-let touchStart=null;
-renderer.domElement.addEventListener("touchstart",e=>{
- if(e.touches.length===1){
-  touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
- }
-},{passive:true});
-renderer.domElement.addEventListener("touchend",e=>{
- if(!touchStart)return;
- const t=e.changedTouches[0];
- if(Math.hypot(t.clientX-touchStart.x,t.clientY-touchStart.y)>25){
-  yaw-=(t.clientX-touchStart.x)*.004;
- }
- touchStart=null;
-},{passive:true});
+renderer.domElement.addEventListener("pointerup",()=>lookPointer=null);
+renderer.domElement.addEventListener("pointercancel",()=>lookPointer=null);
+
+addEventListener("keydown",e=>{
+  keys[e.code]=true;
+  if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code))
+    e.preventDefault();
+  if(e.code==="Space"&&onGround){velocityY=7.2;onGround=false;}
+  if(e.code==="KeyE")placeBlock();
+  if(e.code==="KeyQ")breakBlock();
+});
+addEventListener("keyup",e=>keys[e.code]=false);
+
+function collides(x,y,z){
+  const radius=.27;
+  const feet=y-.01;
+  const head=y+1.72;
+  for(let bx=Math.floor(x-radius);bx<=Math.floor(x+radius);bx++){
+    for(let bz=Math.floor(z-radius);bz<=Math.floor(z+radius);bz++){
+      for(let by=Math.floor(feet);by<=Math.floor(head);by++){
+        if(blockMeshes.has(`${bx},${by},${bz}`)){
+          const overlapsX=x+radius>bx-.5&&x-radius<bx+.5;
+          const overlapsZ=z+radius>bz-.5&&z-radius<bz+.5;
+          const overlapsY=head>by-.5&&feet<by+.5;
+          if(overlapsX&&overlapsZ&&overlapsY)return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function update(dt){
+  if(!joined)return;
+  let forward=0,side=0;
+  if(keys.KeyW||keys.ArrowUp)forward+=1;
+  if(keys.KeyS||keys.ArrowDown)forward-=1;
+  if(keys.KeyD||keys.ArrowRight)side+=1;
+  if(keys.KeyA||keys.ArrowLeft)side-=1;
+  forward+=-joyY;
+  side+=joyX;
+  const length=Math.hypot(forward,side);
+  if(length>1){forward/=length;side/=length;}
+  const speed=5.2;
+  const dx=(Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed*dt;
+  const dz=(Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed*dt;
+
+  if(!collides(world.x+dx,world.y,world.z))world.x+=dx;
+  if(!collides(world.x,world.y,world.z+dz))world.z+=dz;
+
+  velocityY-=18*dt;
+  let newY=world.y+velocityY*dt;
+  if(newY<=1.01){
+    newY=1.01;velocityY=0;onGround=true;
+  }else if(collides(world.x,newY,world.z)){
+    if(velocityY<0)onGround=true;
+    velocityY=0;
+    newY=world.y;
+  }else onGround=false;
+  world.y=newY;
+
+  avatar.position.set(world.x,world.y-1.01,world.z);
+  avatar.rotation.y=yaw+Math.PI;
+
+  const distance=cameraMode===0?6.5:cameraMode===1?4:10;
+  const horizontal=Math.cos(pitch)*distance;
+  const desired=new THREE.Vector3(
+    world.x-Math.sin(yaw)*horizontal,
+    world.y+1.3+Math.sin(pitch)*distance,
+    world.z-Math.cos(yaw)*horizontal
+  );
+  camera.position.lerp(desired,Math.min(1,dt*8));
+  camera.lookAt(world.x,world.y+1.0,world.z);
+
+  const now=performance.now();
+  if(socket&&now-lastMove>65){
+    socket.emit("player:move",{
+      x:world.x,y:world.y-1.01,z:world.z,rotation:yaw
+    });
+    lastMove=now;
+  }
+}
 
 function animate(){
- requestAnimationFrame(animate);
- const dt=Math.min(clock.getDelta(),.04);
-
- if(joined){
-  let forward=-joyY+(keys.w||keys.arrowup?1:0)
-   -(keys.s||keys.arrowdown?1:0);
-  let side=joyX+(keys.d||keys.arrowright?1:0)
-   -(keys.a||keys.arrowleft?1:0);
-  const len=Math.hypot(forward,side);
-  if(len>1){forward/=len;side/=len}
-
-  const speed=5.5;
-  const dx=(side*Math.cos(yaw)-forward*Math.sin(yaw))*speed*dt;
-  const dz=(side*Math.sin(yaw)+forward*Math.cos(yaw))*speed*dt;
-  pos.x=Math.max(-17,Math.min(17,pos.x+dx));
-  pos.z=Math.max(-17,Math.min(17,pos.z+dz));
-
-  if(len>.08)player.rotation.y=Math.atan2(dx,dz);
-
-  if(jumpRequested&&grounded){
-   velocityY=7.2;grounded=false;
-  }
-  jumpRequested=false;
-  velocityY-=18*dt;
-  pos.y+=velocityY*dt;
-  if(pos.y<0){pos.y=0;velocityY=0;grounded=true}
-  player.position.copy(pos);
-
-  const distances=[8,11,5];
-  const heights=[5,7,3.6];
-  const distance=distances[camMode];
-  const height=heights[camMode];
-  const desired=new THREE.Vector3(
-   pos.x+Math.sin(yaw)*distance,
-   pos.y+height,
-   pos.z+Math.cos(yaw)*distance
-  );
-  camera.position.lerp(desired,1-Math.pow(.001,dt));
-  camera.lookAt(pos.x,pos.y+1.05,pos.z);
-
-  if(performance.now()-lastSent>80){
-   socket.emit("move",{
-    x:pos.x,y:pos.y,z:pos.z,rot:player.rotation.y
-   });
-   lastSent=performance.now();
-  }
- }else{
-  camera.position.set(0,7,13);
-  camera.lookAt(0,1,0);
-  player.rotation.y=Math.sin(performance.now()*.0003)*.2;
- }
- renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),.035);
+  update(dt);
+  renderer.render(scene,camera);
 }
 animate();
 
 addEventListener("resize",()=>{
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
- renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
- renderer.setSize(innerWidth,innerHeight);
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
 });
 </script>
 </body>
