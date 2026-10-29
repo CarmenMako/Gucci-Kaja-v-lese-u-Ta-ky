@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, orientation=landscape">
+    <title>Gucci Kája v Lese u Taťky</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; color: white; }
+        #canvas-container { width: 100vw; height: 100vh; }
+        
+        #ui { position: absolute; top: 10px; right: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); pointer-events: none; text-align: right; }
+        h1 { margin: 0; font-size: 18px; color: #ff3366; letter-spacing: 1px; }
+        .stats { font-size: 12px; margin-top: 5px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 8px; backdrop-filter: blur(4px); display: inline-block; }
+
+        /* Jmenovka modalu při startu */
+        #name-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        #name-modal input { padding: 12px; font-size: 18px; border-radius: 8px; border: none; margin-bottom: 15px; text-align: center; width: 250px; }
+        #name-modal button { padding: 12px 25px; font-size: 16px; background: #ff3366; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* Mobilní ovládání */
+        #touch-controls { position: absolute; bottom: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 10px; box-sizing: border-box; pointer-events: none; }
+        .btn { width: 60px; height: 60px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; color: white; font-weight: bold; font-size: 10px; display: flex; align-items: center; justify-content: center; pointer-events: auto; backdrop-filter: blur(5px); flex-direction: column; }
+        .btn:active { background: rgba(255, 51, 102, 0.7); transform: scale(0.95); }
+        .btn-icon { font-size: 20px; }
+        
+        #joystick-container { width: 70px; height: 70px; position: absolute; bottom: 10px; left: 10px; pointer-events: auto; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; }
+        #joystick { width: 35px; height: 35px; background: rgba(255,255,255,0.6); border-radius: 50%; position: absolute; top: 17.5px; left: 17.5px; touch-action: none; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <div id="name-modal">
+        <h2 style="color: #ff3366; margin-bottom: 10px;">GUCCI KÁJA V LESE</h2>
+        <p style="margin-bottom: 15px; font-size: 14px;">Zadej svou přezdívku:</p>
+        <input type="text" id="player-name-input" value="Kája Královna" placeholder="Tvoje přezdívka...">
+        <button id="start-game-btn">VSTOUPIT DO HRY</button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui">
+        <h1>GUCCI KÁJA V LESE U TAŤKY</h1>
+        <div class="stats">
+            <div>🪵 Dřevo: <span id="wood-count">0</span></div>
+            <div>🛡️ Barikády: <span id="barricade-count">0</span></div>
+            <div>🐺 Vlk: <span id="wolf-status" style="color:#ff4444;">Číhá v lese...</span></div>
+        </div>
+    </div>
+
+    <div id="touch-controls">
+        <div class="btn" id="btn-shoot"><span class="btn-icon">🔫</span>STŘÍLET</div>
+        <div class="btn" id="btn-build"><span class="btn-icon">🪵</span>STAVĚT</div>
+    </div>
+
+    <div id="joystick-container">
+        <div id="joystick"></div>
+    </div>
+
+    <script>
+        const socket = io();
+        let playerName = "Kája";
+
+        document.getElementById('start-game-btn').addEventListener('click', () => {
+            const inputVal = document.getElementById('player-name-input').value.trim();
+            if(inputVal) playerName = inputVal;
+            document.getElementById('name-modal').style.display = 'none';
+            socket.emit('joinGame', playerName);
+        });
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050811);
+        scene.fog = new THREE.FogExp2(0x050811, 0.035);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0x1a233a, 0.9);
+        scene.add(ambientLight);
+
+        // Terén
+        const groundGeo = new THREE.PlaneGeometry(300, 300);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111e11, roughness: 1 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Stromy
+        const trees = [];
+        for(let i=0; i<150; i++) {
+            const x = (Math.random() - 0.5) * 250;
+            const z = (Math.random() - 0.5) * 250;
+            if(Math.hypot(x, z) > 10) { 
+                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 5);
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2314 });
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.set(x, 2.5, z);
+                
+                const leavesGeo = new THREE.ConeGeometry(2.5, 6, 6);
+                const leavesMat = new THREE.MeshStandardMaterial({ color: 0x0a2f1d });
+                const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+                leaves.position.set(x, 6.5, z);
+
+                scene.add(trunk);
+                scene.add(leaves);
+                trees.push({ x, z });
+            }
+        }
+
+        // --- VYTVOŘENÍ VLASTNÍ POSTAVIČKY S KORUNOU (KRÁLOVNA) ---
+        function createPlayerMesh() {
+            const group = new THREE.Group();
+            
+            // Tělo
+            const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.2);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff3366 }); // Stylová růžová/červená
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.6;
+            group.add(body);
+
+            // Hlava
+            const headGeo = new THREE.SphereGeometry(0.25, 16, 16);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 1.35;
+            group.add(head);
+
+            // ZLATÁ KORUNA PRO KRÁLOVNU KÁJU
+            const crownGeo = new THREE.ConeGeometry(0.2, 0.3, 4);
+            const crownMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.1 });
+            const crown = new THREE.Mesh(crownGeo, crownMat);
+            crown.position.y = 1.65;
+            group.add(crown);
+
+            // Samopal v ruce postavy
+            const gunGeo = new THREE.BoxGeometry(0.1, 0.1, 0.6);
+            const gunMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const gun = new THREE.Mesh(gunGeo, gunMat);
+            gun.position.set(0.3, 0.7, -0.2);
+            group.add(gun);
+
+            return group;
+        }
+
+        const myPlayer = createPlayerMesh();
+        scene.add(myPlayer);
+        myPlayer.position.set(0, 0, 0);
+
+        let wood = 0;
+        let barricadesCount = 0;
+        let playerPosX = 0, playerPosZ = 0, playerRotation = 0;
+
+        // Joystick
+        const joystick = document.getElementById('joystick');
+        const joystickContainer = document.getElementById('joystick-container');
+        let joyMove = { x: 0, y: 0 };
+        const joyRect = joystickContainer.getBoundingClientRect();
+        const joyRadius = joyRect.width / 2;
+        const joyCenter = joyRect.width / 2;
+        
+        joystick.addEventListener('touchstart', (e) => e.preventDefault());
+        document.addEventListener('touchend', () => {
+            joystick.style.transform = `translate(0px, 0px)`;
+            joyMove = { x: 0, y: 0 };
+        });
+        document.addEventListener('touchmove', (e) => {
+            if(!e.touches.length) return;
+            const touch = e.touches[0];
+            const dx = touch.clientX - joyRect.left - joyCenter;
+            const dy = touch.clientY - joyRect.top - joyCenter;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const clampedDist = Math.min(dist, joyRadius);
+            const angle = Math.atan2(dy, dx);
+            joystick.style.transform = `translate(${Math.cos(angle) * clampedDist}px, ${Math.sin(angle) * clampedDist}px)`;
+            joyMove = { x: (Math.cos(angle) * clampedDist) / joyRadius, y: -(Math.sin(angle) * clampedDist) / joyRadius };
+        });
+
+        document.getElementById('btn-shoot').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            // Kácení / střelba
+            trees.forEach((tree) => {
+                if(Math.hypot(playerPosX - tree.x, playerPosZ - tree.z) < 4) {
+                    wood += 2;
+                    document.getElementById('wood-count').innerText = wood;
+                }
+            });
+            socket.emit('playerShoot', { x: playerPosX, z: playerPosZ });
+        });
+
+        document.getElementById('btn-build').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if(wood >= 15) {
+                wood -= 15;
+                document.getElementById('wood-count').innerText = wood;
+                const bx = playerPosX + Math.sin(playerRotation) * 2;
+                const bz = playerPosZ + Math.cos(playerRotation) * 2;
+                spawnBarricade(bx, bz);
+                socket.emit('placeBarricade', { x: bx, z: bz });
+            }
+        });
+
+        function spawnBarricade(x, z) {
+            const barGeo = new THREE.BoxGeometry(2.5, 1.8, 0.5);
+            const barMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
+            const barricade = new THREE.Mesh(barGeo, barMat);
+            barricade.position.set(x, 0.9, z);
+            scene.add(barricade);
+            barricadesCount++;
+            document.getElementById('barricade-count').innerText = barricadesCount;
+        }
+
+        // Multiplayer s ostatními
+        const otherPlayers = {};
+        socket.on('currentPlayers', (players) => {
+            Object.keys(players).forEach((id) => {
+                if (id !== socket.id) addOtherPlayer(players[id]);
+            });
+        });
+        socket.on('newPlayer', (info) => addOtherPlayer(info));
+        socket.on('playerMoved', (info) => {
+            if (otherPlayers[info.id]) {
+                otherPlayers[info.id].position.set(info.x, info.y, info.z);
+                otherPlayers[info.id].rotation.y = info.rotation;
+            }
+        });
+        socket.on('barricadePlaced', (data) => spawnBarricade(data.x, data.z));
+
+        function addOtherPlayer(info) {
+            const pMesh = createPlayerMesh();
+            pMesh.position.set(info.x, info.y, info.z);
+            scene.add(pMesh);
+            otherPlayers[info.id] = pMesh;
+        }
+
+        // Game Loop
+        const speed = 0.12;
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (joyMove.x !== 0 || joyMove.y !== 0) {
+                playerRotation = Math.atan2(joyMove.x, joyMove.y);
+                myPlayer.rotation.y = playerRotation;
+
+                playerPosX += Math.sin(playerRotation) * speed;
+                playerPosZ += Math.cos(playerRotation) * speed;
+                
+                myPlayer.position.set(playerPosX, 0, playerPosZ);
+            }
+
+            // KAMERA SLEDUJE POSTAVU Z3. OSOBY (SEZHORA)
+            camera.position.set(playerPosX - Math.sin(playerRotation) * 6, playerPosY = 4.5, playerPosZ - Math.cos(playerRotation) * 6);
+            camera.lookAt(playerPosX, playerPosY - 1, playerPosZ);
+
+            socket.emit('playerMovement', {
+                x: playerPosX, y: 0, z: playerPosZ, rotation: playerRotation
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
