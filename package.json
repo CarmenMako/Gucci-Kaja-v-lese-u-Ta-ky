@@ -1,18 +1,18 @@
 
 {
-  "name": "gucci-kaja",
-  "version": "2.0.0",
+  "name": "gucci-kaja-top",
+  "version": "1.0.0",
   "private": true,
-  "description": "Gucci Kaja 3D multiplayer voxel game",
+  "description": "Gucci Kaja - pohádková mobilní voxel hra s multiplayerem",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  },
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "express": "4.21.2",
-    "socket.io": "4.8.1"
   }
 }
