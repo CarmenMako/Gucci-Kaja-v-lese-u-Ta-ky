@@ -1,9 +1,8 @@
-
 {
   "name": "gucci-kaja-top",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Gucci Kaja - pohádková mobilní voxel hra s multiplayerem",
+  "description": "Gucci Kaja - barevná 3D dobrodružná hra pro děti s multiplayerem",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
