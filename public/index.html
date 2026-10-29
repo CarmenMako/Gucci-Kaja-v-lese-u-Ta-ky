@@ -1,321 +1,519 @@
 <!DOCTYPE html>
 <html lang="cs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, orientation=landscape">
-    <title>Gucci Kája v Lese u Taťky</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&display=swap');
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body { overflow: hidden; background: #000; font-family: 'Poppins', sans-serif; touch-action: none; color: white; user-select: none; }
-        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
-        
-        /* Zaměřovač */
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; }
-        #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #ff3366; }
-        #crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
-        #crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
-
-        /* UI Nahoře */
-        #ui { position: absolute; top: 10px; left: 10px; pointer-events: none; z-index: 20; }
-        h1 { font-size: 13px; font-weight: 900; color: #ff3366; text-shadow: 0 2px 8px rgba(0,0,0,0.9); }
-        .stats-card { margin-top: 4px; background: rgba(10, 15, 25, 0.85); border: 1px solid rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 8px; display: flex; gap: 8px; font-size: 10px; font-weight: 700; }
-
-        /* Přepínač zbraní */
-        #inventory { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 30; pointer-events: auto; }
-        .slot { width: 60px; height: 45px; background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.2); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; cursor: pointer; }
-        .slot.active { border-color: #ff3366; background: rgba(255, 51, 102, 0.35); }
-
-        /* Start Modal */
-        #name-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #030508; display: flex; justify-content: center; align-items: center; z-index: 100; }
-        .modal-box { background: rgba(20, 30, 45, 0.95); border: 2px solid #ff3366; padding: 20px; border-radius: 16px; text-align: center; width: 280px; }
-        .modal-box h2 { color: #ff3366; margin-bottom: 8px; font-size: 18px; }
-        .modal-box input { width: 100%; padding: 10px; font-size: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #0b111e; color: white; text-align: center; margin-bottom: 12px; outline: none; }
-        .modal-box button { width: 100%; padding: 10px; font-size: 14px; font-weight: 900; background: #ff3366; color: white; border: none; border-radius: 8px; cursor: pointer; }
-
-        /* Dotykové zóny pro rozdělení levá/pravá */
-        .touch-zone-left { position: absolute; top: 0; left: 0; width: 50vw; height: 100vh; z-index: 10; pointer-events: auto; }
-        .touch-zone-right { position: absolute; top: 0; right: 0; width: 50vw; height: 100vh; z-index: 10; pointer-events: auto; }
-
-        /* Vizuální joystick (ukáže se, kde se dotkneš vlevo) */
-        #virtual-joystick { position: absolute; width: 80px; height: 80px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; transform: translate(-50%, -50%); display: none; z-index: 15; pointer-events: none; background: rgba(255,255,255,0.05); }
-        #virtual-stick-inner { position: absolute; width: 36px; height: 36px; background: rgba(255,255,255,0.8); border-radius: 50%; top: 20px; left: 20px; }
-
-        /* Akční tlačítka vpravo dole */
-        .action-buttons { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 30; pointer-events: auto; }
-        .btn { width: 58px; height: 58px; background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.25); border-radius: 50%; color: white; font-weight: 900; font-size: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .btn:active { transform: scale(0.9); }
-        #btn-action { border-color: #38bdf8; background: rgba(56, 189, 248, 0.25); }
-        #btn-build { border-color: #f59e0b; background: rgba(245, 158, 11, 0.25); }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Gucci Kaja 👑</title>
+<style>
+*{box-sizing:border-box}
+html,body,#game{margin:0;width:100%;height:100%;overflow:hidden}
+body{font-family:system-ui,sans-serif;background:#8bd8ff;color:white;touch-action:none}
+canvas{display:block}
+.panel{background:#191638eF;border:1px solid #ffffff45;border-radius:20px;padding:22px;box-shadow:0 8px 35px #25134766}
+#login{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#9c7aff55,#ff72c855)}
+.loginbox{width:min(400px,100%);text-align:center}
+.logo{font-size:clamp(38px,10vw,58px);font-weight:1000;letter-spacing:-2px;color:#ff83d9;text-shadow:0 4px #803b9a}
+.crown{font-size:48px}
+input{font:inherit;color:white;background:#10112d;border:1px solid #a69ce4;border-radius:12px;padding:13px;width:100%;outline:none}
+button{font:inherit;font-weight:800;color:white;border:0;border-radius:12px;padding:11px;background:linear-gradient(135deg,#ff65c8,#855bff);touch-action:manipulation}
+#join{width:100%;margin-top:12px}
+.small{font-size:12px;opacity:.8;line-height:1.5}
+#hud{display:none;position:fixed;inset:0;pointer-events:none}
+#top{position:absolute;top:10px;left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.pill{background:#191638dc;padding:9px 11px;border-radius:12px;font-size:12px;font-weight:bold}
+#tools{position:absolute;top:62px;right:10px;display:grid;gap:7px;pointer-events:auto}
+#tools button{font-size:12px}
+#joy{position:absolute;bottom:25px;left:20px;width:125px;height:125px;border:2px solid #ffffff70;border-radius:50%;background:#19163866;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:36px;top:36px;width:49px;height:49px;border-radius:50%;background:linear-gradient(135deg,#ff8dd5,#8876ff);border:2px solid white}
+#buttons{position:absolute;bottom:23px;right:14px;display:grid;grid-template-columns:64px 64px;gap:9px;pointer-events:auto}
+.act{height:59px;font-size:11px;padding:4px;border:1px solid #ffffff80;border-radius:50%}
+#jump{height:72px;width:72px}
+#chatbox{position:absolute;left:10px;top:100px;width:min(220px,55vw);pointer-events:auto}
+#messages{font-size:11px;text-shadow:0 1px 4px #000;max-height:85px;overflow:hidden}
+#chatrow{display:flex;gap:4px;margin-top:5px}
+#chatrow input{font-size:11px;padding:8px;min-width:0}
+#chatrow button{padding:6px}
+#inventory{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto}
+.slot{height:36px;width:36px;border:2px solid #ffffff60;border-radius:7px;background:#242047df;display:grid;place-items:center;font-size:19px}
+.slot.selected{border-color:#fff17b;box-shadow:0 0 10px #ffe875}
+#toast{position:absolute;bottom:160px;left:50%;transform:translateX(-50%);background:#191638eF;padding:8px 13px;border-radius:20px;font-size:12px;opacity:0;white-space:nowrap}
+@media(min-width:750px){#joy{width:145px;height:145px}#stick{left:45px;top:45px}}
+</style>
 </head>
 <body>
+<div id="game"></div>
 
-    <div id="name-modal">
-        <div class="modal-box">
-            <h2>GUCCI KÁJA V LESE</h2>
-            <p style="font-size:11px; color:#94a3b8; margin-bottom:12px;">Nová opravená verze ovládání</p>
-            <input type="text" id="player-name-input" value="Královna Kája" maxlength="15">
-            <button id="start-game-btn">VSTOUPIT DO HRA</button>
-        </div>
-    </div>
+<div id="login">
+ <div class="loginbox panel">
+  <div class="crown">👑</div>
+  <div class="logo">Gucci Kaja</div>
+  <h3>✨ Kouzelný blokový svět ✨</h3>
+  <p>Postav si svůj hrad a pozvi kamarády!</p>
+  <input id="nick" maxlength="16" placeholder="Tvoje přezdívka" autocomplete="nickname">
+  <button id="join">👑 HRÁT</button>
+  <p class="small">Pošli kamarádům odkaz na tuto hru. Zadají si přezdívku a připojí se do společného světa.</p>
+ </div>
+</div>
 
-    <div id="crosshair"></div>
-    <div id="canvas-container"></div>
+<div id="hud">
+ <div id="top">
+  <div class="pill">👑 Gucci Kaja</div>
+  <div class="pill" id="count">👥 1 hráč</div>
+  <button id="invite">🔗 Pozvat</button>
+ </div>
+ <div id="tools">
+  <button id="camera">🎥 Kamera</button>
+  <button id="mine">⛏️ Těžit</button>
+  <button id="build">🧱 Stavět</button>
+ </div>
+ <div id="chatbox">
+  <div id="messages"></div>
+  <div id="chatrow">
+   <input id="chat" maxlength="140" placeholder="Zpráva kamarádům">
+   <button id="send">➤</button>
+  </div>
+ </div>
+ <div id="joy"><div id="stick"></div></div>
+ <div id="buttons">
+  <button class="act" id="jump">⬆️<br>SKOK</button>
+  <button class="act" id="pick">🌸<br>BLOK</button>
+ </div>
+ <div id="inventory">
+  <div class="slot selected" data-type="grass">🌿</div>
+  <div class="slot" data-type="dirt">🟫</div>
+  <div class="slot" data-type="stone">🪨</div>
+  <div class="slot" data-type="wood">🪵</div>
+  <div class="slot" data-type="pink">🌸</div>
+ </div>
+ <div id="toast"></div>
+</div>
 
-    <div class="touch-zone-left" id="zone-left"></div>
-    <div class="touch-zone-right" id="zone-right"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script type="module">
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-    <div id="virtual-joystick">
-        <div id="virtual-stick-inner"></div>
-    </div>
+const socket=window.io();
+const root=document.querySelector("#game");
+const scene=new THREE.Scene();
+scene.background=new THREE.Color("#91d9ff");
+scene.fog=new THREE.Fog("#91d9ff",28,75);
 
-    <div id="inventory">
-        <div class="slot active" id="slot-axe">🪓 SEKYRA</div>
-        <div class="slot" id="slot-gun">🔫 ZBRANĚ</div>
-    </div>
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,150);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+root.appendChild(renderer.domElement);
 
-    <div id="ui">
-        <h1>GUCCI KÁJA V LESE</h1>
-        <div class="stats-card">
-            <div>🪵 Dřevo: <span id="wood-count">0</span></div>
-            <div>🥩 Maso: <span id="meat-count">0</span></div>
-            <div>❤️ HP: <span id="hp-count">100</span></div>
-        </div>
-    </div>
+scene.add(new THREE.HemisphereLight(0xe5f8ff,0x62794c,2));
+const sun=new THREE.DirectionalLight(0xfff0d5,2.5);
+sun.position.set(-10,22,10);
+sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);
+scene.add(sun);
 
-    <div class="action-buttons">
-        <div class="btn" id="btn-action"><span style="font-size:16px;" id="action-icon">🪓</span><span id="action-text">SEKAT</span></div>
-        <div class="btn" id="btn-build"><span style="font-size:16px;">🪵</span>STAVĚT</div>
-    </div>
+const material={
+ grass:new THREE.MeshStandardMaterial({color:0x65c85b}),
+ dirt:new THREE.MeshStandardMaterial({color:0x95603f}),
+ stone:new THREE.MeshStandardMaterial({color:0x9198a9}),
+ wood:new THREE.MeshStandardMaterial({color:0x9b6035}),
+ pink:new THREE.MeshStandardMaterial({color:0xff83d5}),
+ leaf:new THREE.MeshStandardMaterial({color:0x35a858}),
+ water:new THREE.MeshStandardMaterial({color:0x35c9f0}),
+ gold:new THREE.MeshStandardMaterial({color:0xffd342,metalness:.5,roughness:.3}),
+ skin:new THREE.MeshStandardMaterial({color:0xffd0ad}),
+ hair:new THREE.MeshStandardMaterial({color:0x87482b}),
+ dress:new THREE.MeshStandardMaterial({color:0xe94cae}),
+ white:new THREE.MeshStandardMaterial({color:0xfff5ff})
+};
+const cube=new THREE.BoxGeometry(1,1,1);
+const blocks=new Map(),remotes=new Map();
+const key=(x,y,z)=>`${Math.round(x)},${Math.round(y)},${Math.round(z)}`;
 
-    <script>
-        const socket = io();
-        let activeTool = 'axe';
+function addBlock(x,y,z,type="grass",send=false){
+ x=Math.round(x);y=Math.round(y);z=Math.round(z);
+ const k=key(x,y,z);
+ if(blocks.has(k))return;
+ const mesh=new THREE.Mesh(cube,material[type]||material.grass);
+ mesh.position.set(x,y,z);
+ mesh.castShadow=true;
+ mesh.receiveShadow=true;
+ mesh.userData={x,y,z,type};
+ scene.add(mesh);
+ blocks.set(k,mesh);
+ if(send)socket.emit("placeBlock",{x,y,z,type});
+}
+function removeBlock(x,y,z,send=false){
+ const k=key(x,y,z),m=blocks.get(k);
+ if(!m)return;
+ scene.remove(m);
+ blocks.delete(k);
+ if(send)socket.emit("breakBlock",{x,y,z});
+}
 
-        document.getElementById('start-game-btn').addEventListener('click', () => {
-            document.getElementById('name-modal').style.display = 'none';
-            socket.emit('joinGame', document.getElementById('player-name-input').value.trim() || "Kája");
-        });
+// Základní terén
+for(let x=-18;x<=18;x++){
+ for(let z=-18;z<=18;z++){
+  addBlock(x,0,z,"grass");
+  addBlock(x,-1,z,"dirt");
+ }
+}
 
-        document.getElementById('slot-axe').addEventListener('click', () => {
-            activeTool = 'axe';
-            document.getElementById('slot-axe').classList.add('active');
-            document.getElementById('slot-gun').classList.remove('active');
-            document.getElementById('action-icon').innerText = '🪓';
-            document.getElementById('action-text').innerText = 'SEKAT';
-            updateWeaponModel();
-        });
+// Stromy
+function tree(x,z){
+ for(let y=1;y<4;y++)addBlock(x,y,z,"wood");
+ for(let dx=-1;dx<=1;dx++){
+  for(let dz=-1;dz<=1;dz++){
+   for(let y=3;y<=4;y++){
+    if(Math.abs(dx)+Math.abs(dz)<3)
+     addBlock(x+dx,y,z+dz,"leaf");
+   }
+  }
+ }
+}
+[[-7,-6],[8,-8],[-10,7],[11,8],[4,12],[-13,-1]]
+.forEach(([x,z])=>tree(x,z));
 
-        document.getElementById('slot-gun').addEventListener('click', () => {
-            activeTool = 'gun';
-            document.getElementById('slot-gun').classList.add('active');
-            document.getElementById('slot-axe').classList.remove('active');
-            document.getElementById('action-icon').innerText = '💥';
-            document.getElementById('action-text').innerText = 'PALBA';
-            updateWeaponModel();
-        });
+// Princezna s korunou. Hlava, tělo, ruce i nohy jsou vidět.
+function makePrincess(){
+ const g=new THREE.Group();
+ function part(mat,x,y,z,sx,sy,sz){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);
+  m.position.set(x,y,z);
+  m.castShadow=true;
+  g.add(m);
+  return m;
+ }
+ part(material.hair,0,1.68,0,.68,.78,.48);
+ part(material.skin,0,1.69,-.25,.49,.53,.12);
+ part(material.hair,0,2.03,0,.68,.18,.49);
+ // Korunka
+ part(material.gold,0,2.17,0,.55,.12,.43);
+ for(let i=0;i<5;i++){
+  part(material.gold,-.22+i*.11,2.29,0,.075,.17,.09);
+ }
+ part(material.pink,0,2.19,-.22,.09,.07,.03);
+ // Šaty a ruce
+ part(material.dress,0,1.08,0,.72,.72,.45);
+ part(material.white,0,1.38,-.02,.42,.17,.46);
+ part(material.skin,-.43,1.16,0,.18,.54,.2);
+ part(material.skin,.43,1.16,0,.18,.54,.2);
+ // Nohy a boty
+ part(material.dress,-.19,.48,0,.23,.47,.25);
+ part(material.dress,.19,.48,0,.23,.47,.25);
+ part(material.white,-.19,.18,-.04,.29,.16,.38);
+ part(material.white,.19,.18,-.04,.29,.16,.38);
+ return g;
+}
 
-        // --- SCÉNA ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x080f1d);
-        scene.fog = new THREE.FogExp2(0x080f1d, 0.02);
+const player=makePrincess();
+scene.add(player);
+const pos=new THREE.Vector3(0,0,5);
+let joined=false,nick="Kája",myId=null;
+let selected="grass",yaw=0,camMode=0;
+let velocityY=0,grounded=true,jumpRequested=false;
+let joyX=0,joyY=0,lastSent=0;
+const clock=new THREE.Clock();
 
-        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
+function toast(msg){
+ const el=document.querySelector("#toast");
+ el.textContent=msg;
+ el.style.opacity=1;
+ clearTimeout(toast.timer);
+ toast.timer=setTimeout(()=>el.style.opacity=0,1900);
+}
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-        const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-        sun.position.set(40, 70, 30);
-        sun.castShadow = true;
-        scene.add(sun);
+function enter(){
+ if(joined)return;
+ nick=(document.querySelector("#nick").value||"Kája")
+ .trim().slice(0,16)||"Kája";
+ joined=true;
+ document.querySelector("#login").style.display="none";
+ document.querySelector("#hud").style.display="block";
+ socket.emit("joinGame",nick);
+ toast("Vítej v království, "+nick+"!");
+}
+document.querySelector("#join").onclick=enter;
+document.querySelector("#nick").onkeydown=e=>{
+ if(e.key==="Enter")enter();
+};
 
-        // Země
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(200, 200),
-            new THREE.MeshStandardMaterial({ color: 0x162b1a, roughness: 0.9 })
-        );
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
+function label(name){
+ const c=document.createElement("canvas");
+ c.width=256;c.height=64;
+ const ctx=c.getContext("2d");
+ ctx.fillStyle="#20143ddd";
+ ctx.beginPath();
+ ctx.roundRect(5,5,246,54,16);
+ ctx.fill();
+ ctx.font="bold 24px system-ui";
+ ctx.textAlign="center";
+ ctx.fillStyle="white";
+ ctx.fillText(name.slice(0,16),128,40);
+ const texture=new THREE.CanvasTexture(c);
+ const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false}));
+ sprite.scale.set(2.2,.55,1);
+ sprite.position.y=2.85;
+ return sprite;
+}
+function addRemote(p){
+ if(!p||p.id===myId||remotes.has(p.id))return;
+ const g=makePrincess();
+ g.position.set(p.x||0,p.y||0,p.z||0);
+ g.add(label(p.nick||"Kamarád"));
+ scene.add(g);
+ remotes.set(p.id,g);
+}
+function moveRemote(p){
+ const g=remotes.get(p.id);
+ if(!g)return;
+ g.position.set(p.x||0,p.y||0,p.z||0);
+ g.rotation.y=p.rot||0;
+}
+function updateCount(){
+ document.querySelector("#count").textContent=
+ "👥 "+(remotes.size+1)+" hráčů";
+}
 
-        // Stromy
-        const trees = [];
-        for(let i=0; i<60; i++) {
-            const x = (Math.random() - 0.5) * 160;
-            const z = (Math.random() - 0.5) * 160;
-            if(Math.hypot(x, z) > 6) {
-                const group = new THREE.Group();
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x3d2314 }));
-                trunk.position.y = 2;
-                const leaves = new THREE.Mesh(new THREE.ConeGeometry(2.2, 5, 6), new THREE.MeshStandardMaterial({ color: 0x0f3d1f }));
-                leaves.position.y = 5;
-                group.add(trunk, leaves);
-                group.position.set(x, 0, z);
-                scene.add(group);
-                trees.push({ x, z });
-            }
-        }
+socket.on("connect",()=>{
+ if(joined)socket.emit("joinGame",nick);
+});
+socket.on("joined",p=>{
+ myId=p.id;
+ toast("Připojeno! Pozvi kamarády.");
+});
+socket.on("worldState",data=>{
+ (data.blocks||[]).forEach(b=>addBlock(b.x,b.y,b.z,b.type));
+ (data.players||[]).forEach(addRemote);
+ updateCount();
+});
+socket.on("playerJoined",p=>{
+ addRemote(p);updateCount();
+ toast((p.nick||"Kamarád")+" se připojil!");
+});
+socket.on("playerMoved",moveRemote);
+socket.on("playerLeft",id=>{
+ if(remotes.has(id)){
+  scene.remove(remotes.get(id));
+  remotes.delete(id);
+ }
+ updateCount();
+});
+socket.on("blockPlaced",b=>addBlock(b.x,b.y,b.z,b.type));
+socket.on("blockBroken",b=>removeBlock(b.x,b.y,b.z));
+socket.on("chatMessage",d=>{
+ const el=document.createElement("div");
+ el.textContent=d.nick+": "+d.message;
+ document.querySelector("#messages").appendChild(el);
+ while(document.querySelector("#messages").children.length>5){
+  document.querySelector("#messages").firstChild.remove();
+ }
+});
 
-        // --- ROBLOX MODEL POSTAVY ---
-        const queen = new THREE.Group();
-        const matSkin = new THREE.MeshStandardMaterial({ color: 0xffdbac });
-        const matDress = new THREE.MeshStandardMaterial({ color: 0xff2a5f });
-        const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8 });
+function invite(){
+ const url=location.href;
+ if(navigator.share){
+  navigator.share({title:"Gucci Kaja",text:"Pojď si se mnou zahrát! 👑",url}).catch(()=>{});
+ }else if(navigator.clipboard){
+  navigator.clipboard.writeText(url)
+  .then(()=>toast("Odkaz zkopírován!"))
+  .catch(()=>prompt("Zkopíruj odkaz:",url));
+ }else prompt("Zkopíruj odkaz:",url);
+}
+document.querySelector("#invite").onclick=invite;
 
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.4), matDress);
-        torso.position.y = 1.05;
-        queen.add(torso);
+document.querySelector("#camera").onclick=()=>{
+ camMode=(camMode+1)%3;
+ toast("Pohled kamery změněn");
+};
 
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), matSkin);
-        head.position.y = 1.75;
-        queen.add(head);
+document.querySelectorAll(".slot").forEach(el=>{
+ el.onclick=()=>{
+  document.querySelectorAll(".slot").forEach(s=>s.classList.remove("selected"));
+  el.classList.add("selected");
+  selected=el.dataset.type;
+ };
+});
+document.querySelector("#pick").onclick=()=>{
+ const types=["grass","dirt","stone","wood","pink"];
+ selected=types[(types.indexOf(selected)+1)%types.length];
+ document.querySelectorAll(".slot").forEach(el=>{
+  el.classList.toggle("selected",el.dataset.type===selected);
+ });
+ toast("Vybraný blok: "+selected);
+};
 
-        const crown = new THREE.Group();
-        crown.add(new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.12, 0.54), matGold));
-        crown.position.y = 2.05;
-        queen.add(crown);
+const raycaster=new THREE.Raycaster();
+function targetBlock(){
+ raycaster.setFromCamera(new THREE.Vector2(0,0),camera);
+ const hits=raycaster.intersectObjects([...blocks.values()]);
+ return hits.find(h=>h.distance<7);
+}
+function mine(){
+ const h=targetBlock();
+ if(!h){toast("Namiř kameru na blok");return}
+ const p=h.object.userData;
+ if(p.y<=0){toast("Tento blok nejde vytěžit");return}
+ removeBlock(p.x,p.y,p.z,true);
+}
+function build(){
+ const h=targetBlock();
+ if(!h){toast("Namiř na blok, vedle kterého chceš stavět");return}
+ const normal=h.face.normal.clone()
+ .transformDirection(h.object.matrixWorld);
+ const p=h.object.position.clone().add(normal);
+ if(Math.hypot(p.x-pos.x,p.z-pos.z)<1.3){
+  toast("Moc blízko postavičky");
+  return;
+ }
+ addBlock(p.x,p.y,p.z,selected,true);
+}
+document.querySelector("#mine").onclick=mine;
+document.querySelector("#build").onclick=build;
 
-        const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 0.3), matSkin);
-        armR.position.set(0.58, 1.05, 0);
-        queen.add(armR);
+function sendChat(){
+ const input=document.querySelector("#chat");
+ const value=input.value.trim();
+ if(value)socket.emit("chatMessage",value);
+ input.value="";
+}
+document.querySelector("#send").onclick=sendChat;
+document.querySelector("#chat").onkeydown=e=>{
+ if(e.key==="Enter")sendChat();
+};
 
-        const weaponGroup = new THREE.Group();
-        armR.add(weaponGroup);
-        weaponGroup.position.set(0, -0.2, -0.3);
+// Dotykový joystick
+const joy=document.querySelector("#joy");
+const stick=document.querySelector("#stick");
+let pointer=null;
+function setJoy(e){
+ const r=joy.getBoundingClientRect();
+ const dx=e.clientX-(r.left+r.width/2);
+ const dy=e.clientY-(r.top+r.height/2);
+ const max=r.width*.34;
+ const len=Math.hypot(dx,dy)||1;
+ const x=dx/len*Math.min(len,max);
+ const y=dy/len*Math.min(len,max);
+ joyX=x/max;joyY=y/max;
+ stick.style.transform=`translate(${x}px,${y}px)`;
+}
+function resetJoy(){
+ pointer=null;joyX=0;joyY=0;
+ stick.style.transform="translate(0,0)";
+}
+joy.onpointerdown=e=>{
+ pointer=e.pointerId;
+ joy.setPointerCapture(e.pointerId);
+ setJoy(e);
+};
+joy.onpointermove=e=>{
+ if(pointer===e.pointerId)setJoy(e);
+};
+joy.onpointerup=resetJoy;
+joy.onpointercancel=resetJoy;
 
-        function updateWeaponModel() {
-            while(weaponGroup.children.length > 0) weaponGroup.remove(weaponGroup.children[0]);
-            if(activeTool === 'axe') {
-                const h = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.8, 0.08), new THREE.MeshStandardMaterial({ color: 0x5c4033 }));
-                const b = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.3, 0.3), new THREE.MeshStandardMaterial({ color: 0xcccccc }));
-                b.position.set(0, 0.25, -0.1);
-                weaponGroup.add(h, b);
-            } else {
-                const gun = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.15, 0.7), new THREE.MeshStandardMaterial({ color: 0x111111 }));
-                weaponGroup.add(gun);
-            }
-        }
-        updateWeaponModel();
-        scene.add(queen);
+document.querySelector("#jump").onpointerdown=e=>{
+ e.preventDefault();
+ jumpRequested=true;
+};
+const keys={};
+addEventListener("keydown",e=>{
+ keys[e.key.toLowerCase()]=true;
+ if(e.code==="Space")jumpRequested=true;
+});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
 
-        let wood = 0, meat = 0, hp = 100;
-        let playerPosX = 0, playerPosZ = 0;
-        let cameraAngleY = 0;
+// Myš nebo posunutí prstu otáčí kamerou
+let drag=null;
+renderer.domElement.addEventListener("pointerdown",e=>{
+ if(e.pointerType==="mouse")drag={x:e.clientX,y:e.clientY};
+});
+renderer.domElement.addEventListener("pointermove",e=>{
+ if(drag){
+  yaw-=(e.clientX-drag.x)*.006;
+  drag={x:e.clientX,y:e.clientY};
+ }
+});
+renderer.domElement.addEventListener("pointerup",()=>drag=null);
+let touchStart=null;
+renderer.domElement.addEventListener("touchstart",e=>{
+ if(e.touches.length===1){
+  touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+ }
+},{passive:true});
+renderer.domElement.addEventListener("touchend",e=>{
+ if(!touchStart)return;
+ const t=e.changedTouches[0];
+ if(Math.hypot(t.clientX-touchStart.x,t.clientY-touchStart.y)>25){
+  yaw-=(t.clientX-touchStart.x)*.004;
+ }
+ touchStart=null;
+},{passive:true});
 
-        // --- DOKONALE ODŠELENÉ OVLÁDÁNÍ (LEVÁ = POHYB, PRAVÁ = KAMERA) ---
-        let joyMove = { x: 0, y: 0 };
-        let joyCenterCoord = { x: 0, y: 0 };
-        const joystickEl = document.getElementById('virtual-joystick');
-        const stickInner = document.getElementById('virtual-stick-inner');
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.04);
 
-        // Levá zóna - Joystick
-        const zoneLeft = document.getElementById('zone-left');
-        zoneLeft.addEventListener('touchstart', (e) => {
-            const t = e.touches[0];
-            joyCenterCoord = { x: t.clientX, y: t.clientY };
-            joystickEl.style.display = 'block';
-            joystickEl.style.left = t.clientX + 'px';
-            joystickEl.style.top = t.clientY + 'px';
-            stickInner.style.transform = `translate(0px, 0px)`;
-        });
+ if(joined){
+  let forward=-joyY+(keys.w||keys.arrowup?1:0)
+   -(keys.s||keys.arrowdown?1:0);
+  let side=joyX+(keys.d||keys.arrowright?1:0)
+   -(keys.a||keys.arrowleft?1:0);
+  const len=Math.hypot(forward,side);
+  if(len>1){forward/=len;side/=len}
 
-        zoneLeft.addEventListener('touchmove', (e) => {
-            const t = e.touches[0];
-            const dx = t.clientX - joyCenterCoord.x;
-            const dy = t.clientY - joyCenterCoord.y;
-            const dist = Math.hypot(dx, dy);
-            const maxR = 35;
-            const clamped = Math.min(dist, maxR);
-            const angle = Math.atan2(dy, dx);
-            
-            stickInner.style.transform = `translate(${Math.cos(angle)*clamped}px, ${Math.sin(angle)*clamped}px)`;
-            joyMove = { x: (Math.cos(angle)*clamped)/maxR, y: (Math.sin(angle)*clamped)/maxR };
-        });
+  const speed=5.5;
+  const dx=(side*Math.cos(yaw)-forward*Math.sin(yaw))*speed*dt;
+  const dz=(side*Math.sin(yaw)+forward*Math.cos(yaw))*speed*dt;
+  pos.x=Math.max(-17,Math.min(17,pos.x+dx));
+  pos.z=Math.max(-17,Math.min(17,pos.z+dz));
 
-        zoneLeft.addEventListener('touchend', () => {
-            joystickEl.style.display = 'none';
-            joyMove = { x: 0, y: 0 };
-        });
+  if(len>.08)player.rotation.y=Math.atan2(dx,dz);
 
-        // Pravá zóna - Otáčení kamery prstem
-        const zoneRight = document.getElementById('zone-right');
-        let lastRightX = 0;
-        zoneRight.addEventListener('touchstart', (e) => {
-            lastRightX = e.touches[0].clientX;
-        });
-        zoneRight.addEventListener('touchmove', (e) => {
-            const currentX = e.touches[0].clientX;
-            const deltaX = currentX - lastRightX;
-            cameraAngleY -= deltaX * 0.006;
-            lastRightX = currentX;
-        });
+  if(jumpRequested&&grounded){
+   velocityY=7.2;grounded=false;
+  }
+  jumpRequested=false;
+  velocityY-=18*dt;
+  pos.y+=velocityY*dt;
+  if(pos.y<0){pos.y=0;velocityY=0;grounded=true}
+  player.position.copy(pos);
 
-        // --- AKCE ---
-        document.getElementById('btn-action').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if(activeTool === 'axe') {
-                trees.forEach(tree => {
-                    if(Math.hypot(playerPosX - tree.x, playerPosZ - tree.z) < 5) {
-                        wood += 5;
-                        document.getElementById('wood-count').innerText = wood;
-                    }
-                });
-            } else {
-                meat += 1;
-                document.getElementById('meat-count').innerText = meat;
-            }
-        });
+  const distances=[8,11,5];
+  const heights=[5,7,3.6];
+  const distance=distances[camMode];
+  const height=heights[camMode];
+  const desired=new THREE.Vector3(
+   pos.x+Math.sin(yaw)*distance,
+   pos.y+height,
+   pos.z+Math.cos(yaw)*distance
+  );
+  camera.position.lerp(desired,1-Math.pow(.001,dt));
+  camera.lookAt(pos.x,pos.y+1.05,pos.z);
 
-        document.getElementById('btn-build').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if(wood >= 10) {
-                wood -= 10;
-                document.getElementById('wood-count').innerText = wood;
-                const bx = playerPosX + Math.sin(cameraAngleY) * 2.5;
-                const bz = playerPosZ + Math.cos(cameraAngleY) * 2.5;
-                const bar = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.5, 0.4), new THREE.MeshStandardMaterial({ color: 0x8b5a2b }));
-                bar.position.set(bx, 0.75, bz);
-                scene.add(bar);
-            }
-        });
+  if(performance.now()-lastSent>80){
+   socket.emit("move",{
+    x:pos.x,y:pos.y,z:pos.z,rot:player.rotation.y
+   });
+   lastSent=performance.now();
+  }
+ }else{
+  camera.position.set(0,7,13);
+  camera.lookAt(0,1,0);
+  player.rotation.y=Math.sin(performance.now()*.0003)*.2;
+ }
+ renderer.render(scene,camera);
+}
+animate();
 
-        // --- GAME LOOP ---
-        const speed = 0.15;
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (joyMove.x !== 0 || joyMove.y !== 0) {
-                const moveX = (-joyMove.x * Math.cos(cameraAngleY) - joyMove.y * Math.sin(cameraAngleY));
-                const moveZ = (-joyMove.x * Math.sin(cameraAngleY) + joyMove.y * Math.cos(cameraAngleY));
-                
-                playerPosX += moveX * speed;
-                playerPosZ += moveZ * speed;
-
-                queen.position.set(playerPosX, 0, playerPosZ);
-                queen.rotation.y = cameraAngleY + Math.atan2(-joyMove.x, -joyMove.y);
-            }
-
-            camera.position.x = playerPosX + Math.sin(cameraAngleY) * 6;
-            camera.position.y = 3.5;
-            camera.position.z = playerPosZ + Math.cos(cameraAngleY) * 6;
-            camera.lookAt(playerPosX, 1.2, playerPosZ);
-
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+ renderer.setSize(innerWidth,innerHeight);
+});
+</script>
 </body>
 </html>
